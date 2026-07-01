@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTC — Cross Trend Color Strategy | FX MOZO</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <div class="nav-left">
+        <button class="nav-menu-btn" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="#" class="nav-logo">
+          <span class="logo-accent">CTC</span>
+          <span class="logo-text">Strategy</span>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="#overview" class="nav-link">Overview</a>
+        <a href="#rules" class="nav-link">Rules</a>
+        <a href="#parameters" class="nav-link">Parameters</a>
+        <a href="#backtesting" class="nav-link">Backtesting</a>
+        <a href="/code" class="nav-link">Code</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Side Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="side-drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Menu</span>
+      <button class="drawer-close" aria-label="Close menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="#" class="drawer-link active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="#" class="drawer-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <span>Trading Journal</span>
+      </a>
+      <a href="#" class="drawer-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+        <span>Funded Account</span>
+      </a>
+      <a href="/code" class="drawer-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <span>Indicator Code</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-badge">FX_MOZO</div>
+          <h1 class="hero-title">
+            Cross Trend Color
+            <span class="gradient-text">Strategy</span>
+          </h1>
+          <p class="hero-subtitle">
+            A professional trend-following system built on the <strong>Trend Magic</strong> framework —
+            combining CCI momentum with ATR volatility for precise, color-coded market direction signals.
+          </p>
+          <div class="hero-stats">
+            <div class="hero-stats-row">
+              <div class="stat">
+                <span class="stat-value">EURUSD</span>
+                <span class="stat-label">Recommended Pair</span>
+              </div>
+              <a href="#rules" class="btn btn-outline">Learn More</a>
+            </div>
+            <div class="hero-disclaimer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span><strong>I am not a profitable trader.</strong> This is an indicator-based strategy — not financial advice. You <strong>must backtest</strong> this strategy in a demo account before any live use. Past performance does not guarantee future results. Only risk capital you can afford to lose. Trade at your own risk.</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <img src="/images/hero-strategy.png" alt="CTC Strategy Visual" class="hero-image" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overview Section -->
+  <section id="overview" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Overview</span>
+        <h2 class="section-title">What Is the CTC Strategy?</h2>
+        <p class="section-desc">
+          The <strong>Cross Trend Color (CTC)</strong> Strategy is a sophisticated trend-following system
+          built on the Trend Magic framework — combining CCI momentum with ATR volatility — designed for
+          the forex market, primarily <strong>EURUSD</strong>, using multiple layers of confirmation for
+          high-probability trade signals during peak liquidity sessions.
+        </p>
+      </div>
+      <div class="overview-body">
+        <ul class="overview-points">
+          <li><strong>Trend Magic Core</strong> — Dynamic trend line from CCI and ATR, color-coded <span class="text-blue">blue</span> (bullish) or <span class="text-red">red</span> (bearish).</li>
+          <li><strong>Session-Focused</strong> — Targets <strong>London</strong> (03:00–05:00 EST / 13:30–15:30 IST) and <strong>New York</strong> (08:00–10:00 EST / 18:30–20:30 IST) liquidity windows.</li>
+          <li><strong>HTF Line Conformation</strong> — Price must touch the higher timeframe Trend Magic line within the last 3 candles before entry.</li>
+          <li><strong>Smart Entry Levels</strong> — Configurable entry at 50% of candle range with auto-validation within 1–2 bars.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Strategy Rules Section -->
+  <section id="rules" class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Execution Rules</span>
+        <h2 class="section-title">Step-by-Step Trade Entry</h2>
+        <p class="section-desc">
+          The trend Magic Core strategy follows a strict sequence of <strong>5 confirmation rules</strong>.
+          Each rule must pass in order before a trade is executed. Below is the complete entry logic.
+        </p>
+      </div>
+
+      <div class="rules-flow">
+        <!-- Rule 1: Session Time -->
+        <div class="rule-step" data-step="1">
+          <div class="rule-connector"></div>
+          <div class="rule-card">
+            <div class="rule-header">
+              <span class="rule-number">01</span>
+              <div class="rule-badge-group">
+                <span class="rule-badge rule-pass">Required</span>
+              </div>
+            </div>
+            <h3 class="rule-title">Session Time Check</h3>
+            <p class="rule-desc">
+              Trades are only considered during the two highest-liquidity forex sessions.
+            </p>
+            <div class="rule-sessions">
+              <div class="rule-session london-session">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                  <path d="M2 17l10 5 10-5"></path>
+                  <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                <div>
+                  <span class="session-name">London Session</span>
+                  <span class="session-hours"><strong>03:00 – 05:00</strong> EST <span class="session-ist">/ 13:30 – 15:30 IST</span></span>
+                </div>
+              </div>
+              <div class="rule-session ny-session">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                  <path d="M2 17l10 5 10-5"></path>
+                  <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                <div>
+                  <span class="session-name">New York Session</span>
+                  <span class="session-hours"><strong>08:00 – 10:00</strong> EST <span class="session-ist">/ 18:30 – 20:30 IST</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="rule-news-filter">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span><strong>High-impact news filter:</strong> Do NOT trade on high-impact news days (NFP, CPI, FOMC, etc.). Skip the entire session if a major news event is scheduled.</span>
+            </div>
+            <div class="rule-outcome">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>If NOT within session window <strong>OR</strong> high-impact news day, <strong>skip trade</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule 2: Crossover -->
+        <div class="rule-step" data-step="2">
+          <div class="rule-connector"></div>
+          <div class="rule-card">
+            <div class="rule-header">
+              <span class="rule-number">02</span>
+              <div class="rule-badge-group">
+                <span class="rule-badge rule-pass">Required</span>
+              </div>
+            </div>
+            <h3 class="rule-title">Trend Line Crossover (Body)</h3>
+            <p class="rule-desc">
+              The <strong>entry candle body</strong> must cross the Trend Magic line. A wick touching the line does NOT count — the open-to-close body must fully breach it.
+            </p>
+            <div class="rule-chart-frame">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span><strong>Chart Timeframe:</strong> Requires <strong>5-minute (M5)</strong> chart. All crossover signals are validated on the M5 timeframe.</span>
+            </div>
+            <div class="rule-visual-crossover">
+              <div class="crossover-diagram">
+                <div class="candle-container">
+                  <!-- Bullish Candle Crossing Up -->
+                  <div class="candle-group">
+                    <span class="candle-label">Valid Crossover</span>
+                    <img src="/images/buy-valid.png" alt="Valid buy crossover - body crosses trend line" class="candle-img" />
+                    <div class="candle-detail">
+                      <span>Open <span class="tdim">below line</span></span>
+                      <span>Close <span class="tup">above line</span></span>
+                    </div>
+                  </div>
+                  <!-- Invalid: Wick Only -->
+                  <div class="candle-group invalid">
+                    <span class="candle-label">Invalid (Wick Only)</span>
+                    <img src="/images/buy-invalid-wick.png" alt="Invalid buy - wick only crosses the trend line" class="candle-img" />
+                    <div class="candle-detail">
+                      <span>Wick crosses but</span>
+                      <span>body does <strong>NOT</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rule-outcome">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>If body does NOT cross, <strong>no signal</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule 3: Trend Color -->
+        <div class="rule-step" data-step="3">
+          <div class="rule-connector"></div>
+          <div class="rule-card">
+            <div class="rule-header">
+              <span class="rule-number">03</span>
+              <div class="rule-badge-group">
+                <span class="rule-badge rule-pass">Required</span>
+              </div>
+            </div>
+            <h3 class="rule-title">Trend Color Validation</h3>
+            <p class="rule-desc">
+              The Trend Magic line must be <span class="tblue"><strong>blue</strong></span> for <strong>buy</strong> entries and <span class="tred"><strong>red</strong></span> for <strong>sell</strong> entries. This confirms the CCI momentum aligns with the trade direction.
+            </p>
+            <div class="rule-colors">
+              <div class="color-indicator buy">
+                <div class="color-swatch blue-swatch"></div>
+                <div class="color-info">
+                  <span class="color-direction">BUY</span>
+                  <span class="color-cond">Trend = <span class="tblue">Blue</span></span>
+                  <span class="color-meta">CCI ≥ 0 → Bullish</span>
+                </div>
+              </div>
+              <div class="color-indicator sell">
+                <div class="color-swatch red-swatch"></div>
+                <div class="color-info">
+                  <span class="color-direction">SELL</span>
+                  <span class="color-cond">Trend = <span class="tred">Red</span></span>
+                  <span class="color-meta">CCI &lt; 0 → Bearish</span>
+                </div>
+              </div>
+            </div>
+            <div class="rule-visual-colors">
+              <div class="candle-container">
+                <div class="candle-group">
+                  <span class="candle-label">Valid Trend Color</span>
+                  <img src="/images/buy-valid.png" alt="Valid buy with blue trend color" class="candle-img" />
+                  <div class="candle-detail">
+                    <span>Trend = <span class="tblue">Blue</span></span>
+                    <span>Direction matches ✓</span>
+                  </div>
+                </div>
+                <div class="candle-group invalid">
+                  <span class="candle-label">Invalid Trend Color</span>
+                  <img src="/images/buy-invalid.png" alt="Invalid buy - wrong trend color" class="candle-img" />
+                  <div class="candle-detail">
+                    <span>Color does <strong>NOT</strong></span>
+                    <span>match direction</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rule-outcome">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>If color does NOT match direction, <strong>skip trade</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule 4: HTF Touch -->
+        <div class="rule-step" data-step="4">
+          <div class="rule-connector"></div>
+          <div class="rule-card">
+            <div class="rule-header">
+              <span class="rule-number">04</span>
+              <div class="rule-badge-group">
+                <span class="rule-badge rule-on">Recommended ON</span>
+              </div>
+            </div>
+            <h3 class="rule-title">HTF Touch Confirmation</h3>
+            <p class="rule-desc">
+              Price must have <strong>touched the higher timeframe (HTF) Trend Magic line</strong> within the last 3 candles. This check includes the entry candle itself.
+            </p>
+            <div class="rule-htf-visual">
+              <div class="candle-container">
+                <div class="candle-group">
+                  <span class="candle-label">Valid HTF Touch</span>
+                  <img src="/images/buy-valid-htf.png" alt="Valid buy - price touches HTF line" class="candle-img" />
+                  <div class="candle-detail">
+                    <span>Price touches</span>
+                    <span>HTF line <span class="tgreen">✓</span></span>
+                  </div>
+                </div>
+                <div class="candle-group invalid">
+                  <span class="candle-label">Invalid (No Touch)</span>
+                  <img src="/images/buy-invalid-htf.png" alt="Invalid buy - no HTF touch in lookback" class="candle-img" />
+                  <div class="candle-detail">
+                    <span>No HTF touch</span>
+                    <span>in lookback ✗</span>
+                  </div>
+                </div>
+                <div class="candle-group invalid">
+                  <span class="candle-label">Invalid (Far Offset)</span>
+                  <img src="/images/buy-invalid-htf 2.png" alt="Invalid buy - price too far from HTF line" class="candle-img" />
+                  <div class="candle-detail">
+                    <span>Price fails to</span>
+                    <span>touch HTF line ✗</span>
+                  </div>
+                </div>
+                <div class="candle-group">
+                  <span class="candle-label">Valid HTF Touch 2</span>
+                  <img src="/images/buy-valid-htf 2.png" alt="Valid buy - another HTF touch scenario" class="candle-img" />
+                  <div class="candle-detail">
+                    <span>Price touches</span>
+                    <span>HTF line <span class="tgreen">✓</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rule-outcome">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>If no touch in lookback, <strong>skip trade</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule 5: Entry Execution -->
+        <div class="rule-step" data-step="5">
+          <div class="rule-connector"></div>
+          <div class="rule-card rule-card-final">
+            <div class="rule-header">
+              <span class="rule-number">05</span>
+              <div class="rule-badge-group">
+                <span class="rule-badge rule-execute">Execute</span>
+              </div>
+            </div>
+            <h3 class="rule-title">Entry Execution &amp; Risk Management</h3>
+            <p class="rule-desc">
+              All confirmations pass. Now place the trade with the following precise parameters:
+            </p>
+            <div class="rule-entry-details">
+              <div class="entry-details-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>-- Entry --</span>
+              </div>
+              <div class="entry-detail-row">
+                <span class="ed-label">Entry</span>
+                <span class="ed-value">Enter at 50% of the entry candle</span>
+              </div>
+              <div class="entry-detail-row">
+                <span class="ed-label ed-valid">Valid</span>
+                <span class="ed-value">Price touches the entry level within the next 2 candles</span>
+              </div>
+              <div class="entry-detail-row">
+                <span class="ed-label ed-invalid">Invalid</span>
+                <span class="ed-value">Price fails to touch the entry level within 2 candles</span>
+              </div>
+              <div class="entry-detail-row">
+                <span class="ed-label">Stop Loss</span>
+                <span class="ed-value">Previous candle's low</span>
+              </div>
+              <div class="entry-detail-row">
+                <span class="ed-label">Target Profit</span>
+                <span class="ed-value">1 : 2 Risk-to-Reward Ratio</span>
+              </div>
+            </div>
+            <div class="candle-container">
+              <div class="candle-group">
+                <span class="candle-label">Entry Setup</span>
+                <img src="/images/buy-entry-setup.png" alt="BUY entry setup on M5 chart" class="candle-img" />
+              </div>
+              <div class="candle-group">
+                <span class="candle-label">Take Profit</span>
+                <img src="/images/buy-entry-tp.png" alt="BUY entry take profit on M5 chart" class="candle-img" />
+              </div>
+              <div class="candle-group invalid">
+                <span class="candle-label">Invalid Entry</span>
+                <img src="/images/buy-entry-invalid.png" alt="BUY entry fails to trigger - invalid entry" class="candle-img" />
+                <div class="candle-detail">
+                  <span>Entry level not</span>
+                  <span>triggered within 2 candles ✗</span>
+                </div>
+              </div>
+            </div>
+            <div class="exec-extra">
+                <div class="exec-extra-item">
+                  <span class="extra-label">Max Trade Duration</span>
+                  <span class="extra-value">2 candles — if price doesn't trigger within 1–2 bars, entry is <span class="tred">invalid</span></span>
+                </div>
+                <div class="exec-extra-item">
+                  <span class="extra-label">Per-Session Limit</span>
+                  <span class="extra-value">Max <strong>2 trades</strong> per London or New York session</span>
+                </div>
+              </div>
+          </div>
+        </div>
+
+        <!-- Flow Decision Bar -->
+        <div class="rules-decision-bar">
+          <div class="decision-step active">
+            <span class="ds-number">1</span>
+            <span class="ds-label">Session</span>
+          </div>
+          <div class="decision-arrow">
+            <svg width="20" height="12" viewBox="0 0 30 12" fill="none">
+              <path d="M0 6H26M22 2L28 6L22 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="decision-step active">
+            <span class="ds-number">2</span>
+            <span class="ds-label">Crossover</span>
+          </div>
+          <div class="decision-arrow">
+            <svg width="20" height="12" viewBox="0 0 30 12" fill="none">
+              <path d="M0 6H26M22 2L28 6L22 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="decision-step active">
+            <span class="ds-number">3</span>
+            <span class="ds-label">Trend Color</span>
+          </div>
+          <div class="decision-arrow">
+            <svg width="20" height="12" viewBox="0 0 30 12" fill="none">
+              <path d="M0 6H26M22 2L28 6L22 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="decision-step active">
+            <span class="ds-number">4</span>
+            <span class="ds-label">HTF Touch</span>
+          </div>
+          <div class="decision-arrow">
+            <svg width="20" height="12" viewBox="0 0 30 12" fill="none">
+              <path d="M0 6H26M22 2L28 6L22 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="decision-step final">
+            <span class="ds-number">5</span>
+            <span class="ds-label">Execute</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Parameters Reference Section -->
+  <section id="parameters" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Reference</span>
+        <h2 class="section-title">Full Parameter Guide</h2>
+        <p class="section-desc">
+          Every configurable input in the CTC Strategy, with descriptions and default values.
+        </p>
+      </div>
+      <div class="params-table-wrapper">
+        <table class="params-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Range</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>CCI Period</code></td>
+              <td>Integer</td>
+              <td>15</td>
+              <td>5 – 50</td>
+              <td>Period for the Commodity Channel Index calculation</td>
+            </tr>
+            <tr>
+              <td><code>ATR Multiplier</code></td>
+              <td>Float</td>
+              <td>1.0</td>
+              <td>0.5 – 3.0</td>
+              <td>Multiplier for ATR in trend channel calculation</td>
+            </tr>
+            <tr>
+              <td><code>ATR Period</code></td>
+              <td>Integer</td>
+              <td>5</td>
+              <td>3 – 20</td>
+              <td>Period for Average True Range</td>
+            </tr>
+            <tr>
+              <td><code>Max Trades London</code></td>
+              <td>Integer</td>
+              <td>2</td>
+              <td>1 – 10</td>
+              <td>Maximum trades allowed per London session</td>
+            </tr>
+            <tr>
+              <td><code>Max Trades New York</code></td>
+              <td>Integer</td>
+              <td>2</td>
+              <td>1 – 10</td>
+              <td>Maximum trades allowed per New York session</td>
+            </tr>
+
+            <tr>
+              <td><code>HTF Timeframe</code></td>
+              <td>String</td>
+              <td>60</td>
+              <td>15m – W</td>
+              <td>Higher timeframe for trend alignment</td>
+            </tr>
+            <tr>
+              <td><code>HTF Touch Bars</code></td>
+              <td>Integer</td>
+              <td>3</td>
+              <td>1 – 10</td>
+              <td>Lookback bars for HTF touch confirmation</td>
+            </tr>
+            <tr>
+              <td><code>Entry Level</code></td>
+              <td>Float</td>
+              <td>0.5 (50%)</td>
+              <td>0 – 100%</td>
+              <td>Entry price as % of candle range</td>
+            </tr>
+            <tr>
+              <td><code>London Session</code></td>
+              <td>Session</td>
+              <td>0300-0500</td>
+              <td>—</td>
+              <td>London trading session window (EST)</td>
+            </tr>
+            <tr>
+              <td><code>New York Session</code></td>
+              <td>Session</td>
+              <td>0800-1000</td>
+              <td>—</td>
+              <td>New York trading session window (EST)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Backtesting Section -->
+  <section id="backtesting" class="section section-dark backtest-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Backtest</span>
+        <h2 class="section-title">Test This Strategy Risk-Free</h2>
+        <p class="section-desc">
+          Before going live, <strong>backtest the CTC Strategy</strong> thoroughly using
+          <strong><a href="https://strategytune.com" target="_blank" rel="noopener noreferrer" class="bt-link">StrategyTune</a></strong>
+          — a professional manual backtesting platform with price replay across Forex, Crypto, Indices, Stocks &amp; Commodities.
+        </p>
+      </div>
+      <div class="bt-grid">
+        <div class="bt-card">
+          <div class="bt-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <h3 class="bt-card-title">Manual Price Replay</h3>
+          <p class="bt-card-desc">Simulate past market conditions with a video player–style timeline. Jump forward &amp; backward through historical data at speeds up to 50,000x with tick-by-tick precision.</p>
+        </div>
+        <div class="bt-card">
+          <div class="bt-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <h3 class="bt-card-title">Custom Indicators</h3>
+          <p class="bt-card-desc">Code or AI-generate your own indicators using natural language prompts. Integrates with Anthropic, OpenAI &amp; Google models for rapid prototyping.</p>
+        </div>
+        <div class="bt-card">
+          <div class="bt-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <h3 class="bt-card-title">Multi-Asset Support</h3>
+          <p class="bt-card-desc">Backtest on Forex, Crypto, Indices, Stocks &amp; Commodities — all within a single unified replay environment.</p>
+        </div>
+        <div class="bt-card">
+          <div class="bt-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </div>
+          <h3 class="bt-card-title">No Login Required</h3>
+          <p class="bt-card-desc">Start backtesting instantly — no account needed. Free anonymous usage. Save your sessions to the cloud if you create an account.</p>
+        </div>
+      </div>
+      <div class="bt-cta">
+        <a href="https://strategytune.com" target="_blank" rel="noopener noreferrer" class="btn btn-bt">
+          Try StrategyTune
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17l9.2-9.2M17 17V7H7"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-accent">CTC</span>
+          <span class="logo-text">Strategy</span>
+          <p class="footer-desc">by FX_MOZO</p>
+        </div>
+        <div class="footer-links">
+          <a href="#overview">Overview</a>
+          <a href="#rules">Rules</a>
+          <a href="#parameters">Parameters</a>
+          <a href="#backtesting">Backtesting</a>
+          <a href="/code">Code</a>
+        </div>
+        <div class="footer-disclaimer">
+          <p><strong>Disclaimer:</strong> This is an educational and informational resource. Trading forex carries significant risk. Past performance and simulated data do not guarantee future results. Always test strategies thoroughly before using with real capital.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 FX_MOZO. All rights reserved. Built with Pine Script v6.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox-overlay" id="lightboxOverlay">
+    <button class="lightbox-close" aria-label="Close fullscreen view">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="Full-screen chart" />
+    <span class="lightbox-label" id="lightboxLabel"></span>
+  </div>
+
+  <!-- Side Drawer Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const menuBtn = document.querySelector('.nav-menu-btn');
+      const drawer = document.getElementById('sideDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const closeBtn = document.querySelector('.drawer-close');
+
+      function openDrawer() {
+        drawer.classList.add('open');
+        overlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeDrawer() {
+        drawer.classList.remove('open');
+        overlay.classList.remove('visible');
+        document.body.style.overflow = '';
+      }
+
+      menuBtn.addEventListener('click', openDrawer);
+      closeBtn.addEventListener('click', closeDrawer);
+      overlay.addEventListener('click', closeDrawer);
+
+      // Close drawer on escape key
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDrawer();
+      });
+
+      // Close drawer on link click
+      document.querySelectorAll('.drawer-link').forEach(function (link) {
+        link.addEventListener('click', closeDrawer);
+      });
+
+      // Lightbox: click any .candle-img to view full screen
+      const lightboxOverlay = document.getElementById('lightboxOverlay');
+      const lightboxImage = document.getElementById('lightboxImage');
+      const lightboxLabel = document.getElementById('lightboxLabel');
+      const lightboxClose = document.querySelector('.lightbox-close');
+
+      function openLightbox(src, label) {
+        lightboxImage.src = src;
+        lightboxLabel.textContent = label || '';
+        lightboxOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLightbox() {
+        lightboxOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
+      }
+
+      document.querySelectorAll('.candle-img').forEach(function (img) {
+        img.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var label = '';
+          var group = this.closest('.candle-group');
+          if (group) {
+            var labelEl = group.querySelector('.candle-label');
+            if (labelEl) label = labelEl.textContent;
+          }
+          openLightbox(this.src, label);
+        });
+      });
+
+      lightboxClose.addEventListener('click', closeLightbox);
+      lightboxOverlay.addEventListener('click', function (e) {
+        if (e.target === lightboxOverlay) closeLightbox();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && lightboxOverlay.classList.contains('visible')) {
+          closeLightbox();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indicator Code — CTC Strategy | FX MOZO</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <div class="nav-left">
+        <button class="nav-menu-btn" id="menuBtnCode" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="/" class="nav-logo">
+          <span class="logo-accent">CTC</span>
+          <span class="logo-text">Strategy</span>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/#overview" class="nav-link">Overview</a>
+        <a href="/#rules" class="nav-link">Rules</a>
+        <a href="/#parameters" class="nav-link">Parameters</a>
+        <a href="/#backtesting" class="nav-link">Backtesting</a>
+        <a href="/code" class="nav-link active-page">Code</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Side Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="side-drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Menu</span>
+      <button class="drawer-close" aria-label="Close menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="/" class="drawer-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="/code" class="drawer-link active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <span>Indicator Code</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Code Header -->
+  <section class="code-hero">
+    <div class="container">
+      <div class="code-hero-content">
+        <span class="section-tag">Source Code</span>
+        <h1 class="code-hero-title">Indicator Code</h1>
+        <p class="code-hero-desc">
+          Ready-to-use indicator code for the <strong>Cross Trend Color (CTC) Strategy</strong>.
+          Copy and paste into TradingView (Pine Script) or StrategyTune (Custom Indicator).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tab Navigation -->
+  <div class="code-tabs-bar">
+    <div class="container">
+      <div class="code-tabs">
+        <button class="code-tab active" data-tab="tradingview">TradingView — Pine Script</button>
+        <button class="code-tab" data-tab="strategytune">StrategyTune — Custom Indicator</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Sections -->
+  <section class="section section-dark code-section">
+    <div class="container">
+
+      <!-- TradingView Tab -->
+      <div class="code-panel active" id="panel-tradingview">
+        <div class="code-panel-header">
+          <div class="code-panel-info">
+            <span class="code-panel-tag">Pine Script v6</span>
+            <h2 class="code-panel-title">TradingView Indicator</h2>
+            <p class="code-panel-desc">
+              Cross Trend Color (CTC) Strategy indicator for TradingView. Displays the Trend Magic line
+              with color-coded buy/sell signals, HTF touch confirmation, and entry levels.
+            </p>
+          </div>
+          <button class="btn btn-copy" data-copy="code-tradingview" aria-label="Copy TradingView code">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy Code</span>
+          </button>
+        </div>
+        <div class="code-block-wrapper">
+          <pre class="code-block"><code id="code-tradingview">//@version=6
+indicator("CTC Strategy", overlay=true, max_labels_count=500)
+
+//==============================
+// TREND MAGIC SETTINGS
+//==============================
+period = input.int(15, "CCI Period")
+coeff  = input.float(1.0, "ATR Multiplier")
+AP     = input.int(5, "ATR Period")
+src    = input.source(close, "Source")
+
+// PER-SESSION TRADE TRACKING
+maxTradesLondon = input.int(2, "Max Trades — London", minval=1, maxval=10, step=1)
+maxTradesNewYork = input.int(2, "Max Trades — New York", minval=1, maxval=10, step=1)
+var int londonTradeCount = 0
+var int newyorkTradeCount = 0
+var int utBotLondonTradeCount = 0
+var int utBotNewYorkTradeCount = 0
+var int lastDay = dayofmonth
+
+if dayofmonth != lastDay
+    londonTradeCount := 0
+    newyorkTradeCount := 0
+    utBotLondonTradeCount := 0
+    utBotNewYorkTradeCount := 0
+    lastDay := dayofmonth
+
+//==============================
+// TREND MAGIC
+//==============================
+ATR = ta.sma(ta.tr, AP)
+
+upT   = low - ATR * coeff
+downT = high + ATR * coeff
+
+var float MagicTrend = na
+
+MagicTrend := ta.cci(src, period) >= 0 ?
+     (upT < nz(MagicTrend[1]) ? nz(MagicTrend[1]) : upT) :
+     (downT > nz(MagicTrend[1]) ? nz(MagicTrend[1]) : downT)
+
+trendBlue = ta.cci(src, period) >= 0
+trendRed  = ta.cci(src, period) < 0
+
+plot(
+     MagicTrend,
+     title="Trend Magic",
+     color=trendBlue ? color.blue : color.red,
+     linewidth=3
+)
+
+//==============================
+// UT BOT SETTINGS
+//==============================
+showUtBot = input.bool(true, "Show UT Bot", group="UT Bot Settings")
+utBotKey = input.float(1.0, "UT Bot Key Value", step=0.1, group="UT Bot Settings")
+utBotAtrPeriod = input.int(10, "UT Bot ATR Period", minval=1, maxval=50, step=1, group="UT Bot Settings")
+utBotHeikinAshi = input.bool(false, "UT Bot Heikin Ashi Candles", group="UT Bot Settings")
+utBotMaxTradesLondon = input.int(2, "UT Bot Max Trades — London", minval=1, maxval=10, step=1, group="UT Bot Settings")
+utBotMaxTradesNewYork = input.int(2, "UT Bot Max Trades — New York", minval=1, maxval=10, step=1, group="UT Bot Settings")
+utBotBarColor = input.bool(true, "UT Bot Bar Coloring", group="UT Bot Settings")
+
+//==============================
+// FILTER SETTINGS
+//==============================
+usePrevCandleFilter = input.bool(false, "Use Previous Candle Filter", group="Filter Settings")
+
+useHtfFilter = input.bool(false, "Use HTF Trend Filter", group="Filter Settings")
+htfTimeframe = input.string("60", "HTF Timeframe", options=["15","30","60","120","240","D","W"], group="Filter Settings")
+
+useHtfTouchFilter = input.bool(true, "Use HTF Touch Filter", group="Filter Settings")
+htfTouchBars = input.int(3, "HTF Touch Bars", minval=1, maxval=10, step=1, group="Filter Settings")
+
+//==============================
+// SESSION SETTINGS
+//==============================
+londonSession = input.session("0300-0440", "London Session (EST)")
+newyorkSession = input.session("0800-0955", "New York Session (EST)")
+
+inLondonSession = not na(time(timeframe.period, londonSession, "America/New_York"))
+inNewYorkSession = not na(time(timeframe.period, newyorkSession, "America/New_York"))
+
+bgcolor(
+     inLondonSession ?
+     #00897b1a :
+     na
+)
+
+bgcolor(
+     inNewYorkSession ?
+     #f236451a :
+     na
+)
+
+//==============================
+// UT BOT TRAILING STOP
+//==============================
+utBotXatr = ta.atr(utBotAtrPeriod)
+utBotNLoss = utBotKey * utBotXatr
+
+utBotSrc = utBotHeikinAshi ? request.security(ticker.heikinashi(syminfo.tickerid), timeframe.period, close, lookahead=barmerge.lookahead_off) : close
+
+var float utBotTrailingStop = 0.0
+utBotTrailingStop := utBotSrc > nz(utBotTrailingStop[1]) and utBotSrc[1] > nz(utBotTrailingStop[1]) ?
+     math.max(nz(utBotTrailingStop[1]), utBotSrc - utBotNLoss) :
+     utBotSrc < nz(utBotTrailingStop[1]) and utBotSrc[1] < nz(utBotTrailingStop[1]) ?
+     math.min(nz(utBotTrailingStop[1]), utBotSrc + utBotNLoss) :
+     utBotSrc > nz(utBotTrailingStop[1]) ? utBotSrc - utBotNLoss : utBotSrc + utBotNLoss
+
+var int utBotPos = 0
+utBotPos := utBotSrc[1] < nz(utBotTrailingStop[1]) and utBotSrc > nz(utBotTrailingStop[1]) ? 1 :
+     utBotSrc[1] > nz(utBotTrailingStop[1]) and utBotSrc < nz(utBotTrailingStop[1]) ? -1 :
+     nz(utBotPos[1], 0)
+
+utBotStopColor = utBotPos == -1 ? color.red : utBotPos == 1 ? color.green : color.blue
+
+utBotEma = ta.ema(utBotSrc, 1)
+utBotAbove = ta.crossover(utBotEma, utBotTrailingStop)
+utBotBelow = ta.crossover(utBotTrailingStop, utBotEma)
+
+utBotBuyRaw = utBotSrc > utBotTrailingStop and utBotAbove
+utBotSellRaw = utBotSrc < utBotTrailingStop and utBotBelow
+
+// UT Bot session-restricted signals
+utBotBuySignal = showUtBot and utBotBuyRaw and
+     (inLondonSession and utBotLondonTradeCount < utBotMaxTradesLondon or inNewYorkSession and utBotNewYorkTradeCount < utBotMaxTradesNewYork)
+
+utBotSellSignal = showUtBot and utBotSellRaw and
+     (inLondonSession and utBotLondonTradeCount < utBotMaxTradesLondon or inNewYorkSession and utBotNewYorkTradeCount < utBotMaxTradesNewYork)
+
+//==============================
+// HTF TREND CONFIRMATION
+//==============================
+// Request HTF data (default lookahead so we can see complete HTF bars)
+[htfCciRaw, htfCloseRaw] = request.security(syminfo.tickerid, htfTimeframe, [ta.cci(close, period), close])
+
+// Detect when a new HTF bar starts (previous one just closed)
+isNewHtfBar = timeframe.change(htfTimeframe)
+
+// Store CONFIRMED values from the PREVIOUS completed HTF bar only
+// This prevents the HTF line from moving with the current forming candle
+var float htfClose = na
+var float htfCci = na
+if isNewHtfBar
+    htfClose := htfCloseRaw[1]
+    htfCci := htfCciRaw[1]
+
+// Initialize on first bar
+if na(htfClose)
+    htfClose := htfCloseRaw
+    htfCci := htfCciRaw
+
+htfTrendBull = htfCci >= 0
+htfTrendOk = not useHtfFilter or htfTrendBull == trendBlue
+
+//==============================
+// HTF TOUCH CONFIRMATION — default on
+//==============================
+// Check if a candle's range (high to low) touches the HTF line
+candleTouchesHtf = high >= htfClose and low <= htfClose
+
+// At least 1 of the recent N candles must have touched the HTF line
+anyTouchHtf = false
+for i = 0 to htfTouchBars - 1
+    if candleTouchesHtf[i]
+        anyTouchHtf := true
+
+// Buy: close must be above HTF line
+buyHtfTouchOk = not useHtfTouchFilter or (close > htfClose and anyTouchHtf)
+// Sell: close must be below HTF line
+sellHtfTouchOk = not useHtfTouchFilter or (close < htfClose and anyTouchHtf)
+
+// HTF VISUAL OVERLAY
+showHtfVisual = input.bool(true, "Show HTF Visual", group="Filter Settings")
+
+// Plot HTF close as a stepped line (holds value constant between HTF bars)
+htfPlotColor = htfTrendBull ? color.new(color.blue, 30) : color.new(color.red, 30)
+plot(showHtfVisual ? htfClose : na, "HTF Line", htfPlotColor, 2, plot.style_stepline)
+
+strongBuyCross =
+     open < MagicTrend and
+     close > MagicTrend
+
+strongSellCross =
+     open > MagicTrend and
+     close < MagicTrend
+
+//==============================
+// BUY CONDITIONS
+//==============================
+buySignal =
+     (inLondonSession and londonTradeCount < maxTradesLondon or inNewYorkSession and newyorkTradeCount < maxTradesNewYork) and
+     strongBuyCross and
+     trendBlue and
+     htfTrendOk and
+     buyHtfTouchOk
+
+//==============================
+// SELL CONDITIONS
+//==============================
+sellSignal =
+     (inLondonSession and londonTradeCount < maxTradesLondon or inNewYorkSession and newyorkTradeCount < maxTradesNewYork) and
+     strongSellCross and
+     trendRed and
+     htfTrendOk and
+     sellHtfTouchOk
+
+// PREVIOUS CANDLE CONFIRMATION — prev candle must already be positioned in direction (no cross needed)
+prevBullish = close[1] > open[1]
+prevBearish = close[1] < open[1]
+
+// PREV CANDLE OPEN vs TREND LINE — prev candle open must be on correct side of MagicTrend
+prevOpenBelowTrend = open[1] < MagicTrend[1]
+prevOpenAboveTrend = open[1] > MagicTrend[1]
+
+confirmedBuy = buySignal and (not usePrevCandleFilter or prevBullish) and prevOpenBelowTrend
+confirmedSell = sellSignal and (not usePrevCandleFilter or prevBearish) and prevOpenAboveTrend
+
+showInfoTable = input.bool(true, "Show Info Table")
+
+//==============================
+// ENTRY LEVEL & VALIDATION
+//==============================
+entryLevelPct = input.float(0.5, "Entry Level (%)", minval=0.0, maxval=1.0, step=0.05)
+entryLevelLabel = str.tostring(entryLevelPct * 100, "#") + "%"
+
+var line entryLine = na
+var label entryLabel = na
+var float pendingPrice = na
+var int pendingBar = -1
+var string pendingDir = ""
+
+// Validate pending entry: must hit entry level within 1st or 2nd candle
+if not na(pendingPrice) and not na(pendingBar)
+    barsSince = bar_index - pendingBar
+    hit = false
+
+    // Check 1st and 2nd candle after entry candle
+    if barsSince >= 1 and barsSince <= 2
+        if pendingDir == "buy" and low <= pendingPrice
+            hit := true
+        if pendingDir == "sell" and high >= pendingPrice
+            hit := true
+
+    if hit
+        // Entry validated — update to confirmed style
+        if not na(entryLine)
+            line.set_color(entryLine, pendingDir == "buy" ? color.lime : color.red)
+            line.set_width(entryLine, 2)
+        if not na(entryLabel)
+            newText = pendingDir == "buy" ? "BUY ✓" : "SELL ✓"
+            label.set_text(entryLabel, newText)
+            label.set_color(entryLabel, pendingDir == "buy" ? color.green : color.red)
+        pendingPrice := na
+        pendingBar := -1
+        pendingDir := ""
+
+    if barsSince > 2 and not hit
+        // Entry invalid — price never reached the level in time
+        if not na(entryLine)
+            line.set_color(entryLine, color.gray)
+            line.set_width(entryLine, 1)
+        if not na(entryLabel)
+            newText2 = pendingDir == "buy" ? "BUY" : "SELL"
+            label.set_text(entryLabel, newText2)
+            label.set_color(entryLabel, color.gray)
+        pendingPrice := na
+        pendingBar := -1
+        pendingDir := ""
+
+// --- BUY ENTRY ---
+if confirmedBuy
+    entryPrice = low + (high - low) * entryLevelPct
+
+    if not na(entryLine)
+        line.delete(entryLine)
+    if not na(entryLabel)
+        label.delete(entryLabel)
+
+    entryLine := line.new(
+         bar_index,
+         entryPrice,
+         bar_index + 3,
+         entryPrice,
+         color=color.yellow,
+         width=2
+    )
+
+    entryLabel := label.new(
+         bar_index,
+         low,
+         "BUY",
+         style=label.style_label_up,
+         color=color.yellow,
+         textcolor=color.white
+    )
+
+    pendingPrice := entryPrice
+    pendingBar := bar_index
+    pendingDir := "buy"
+
+// --- SELL ENTRY ---
+if confirmedSell
+    entryPrice = low + (high - low) * entryLevelPct
+
+    if not na(entryLine)
+        line.delete(entryLine)
+    if not na(entryLabel)
+        label.delete(entryLabel)
+
+    entryLine := line.new(
+         bar_index,
+         entryPrice,
+         bar_index + 3,
+         entryPrice,
+         color=color.yellow,
+         width=2
+    )
+
+    entryLabel := label.new(
+         bar_index,
+         high,
+         "SELL",
+         style=label.style_label_down,
+         color=color.yellow,
+         textcolor=color.white
+    )
+
+    pendingPrice := entryPrice
+    pendingBar := bar_index
+    pendingDir := "sell"
+
+//==============================
+// SIGNAL MARKERS
+//==============================
+plotshape(
+     confirmedBuy,
+     title="Buy Signal",
+     location=location.belowbar,
+     style=shape.triangleup,
+     color=color.lime,
+     size=size.small
+)
+
+plotshape(
+     confirmedSell,
+     title="Sell Signal",
+     location=location.abovebar,
+     style=shape.triangledown,
+     color=color.red,
+     size=size.small
+)
+
+if confirmedBuy or confirmedSell
+    if inLondonSession
+        londonTradeCount += 1
+    if inNewYorkSession
+        newyorkTradeCount += 1
+
+if utBotBuySignal or utBotSellSignal
+    if inLondonSession
+        utBotLondonTradeCount += 1
+    if inNewYorkSession
+        utBotNewYorkTradeCount += 1
+
+//==============================
+// UT BOT VISUALS
+//==============================
+plotshape(
+     showUtBot and utBotBuySignal,
+     title="UT Bot Buy",
+     text="UT Buy",
+     style=shape.labelup,
+     location=location.belowbar,
+     color=color.green,
+     textcolor=color.white,
+     size=size.tiny
+)
+
+plotshape(
+     showUtBot and utBotSellSignal,
+     title="UT Bot Sell",
+     text="UT Sell",
+     style=shape.labeldown,
+     location=location.abovebar,
+     color=color.red,
+     textcolor=color.white,
+     size=size.tiny
+)
+
+// UT Bot bar coloring
+barcolor(showUtBot and utBotBarColor and utBotBuyRaw ? color.new(color.green, 80) : na)
+barcolor(showUtBot and utBotBarColor and utBotSellRaw ? color.new(color.red, 80) : na)
+
+//==============================
+// INFO TABLE
+//==============================
+var table infoTable = table.new(position.top_right, 2, 3, bgcolor=color.new(color.black, 85), border_width=1, border_color=color.new(color.gray, 60), frame_width=1, frame_color=color.new(color.gray, 40))
+
+if showInfoTable and barstate.islast
+    // Header row
+    table.cell(infoTable, 0, 0, "FX MOZO", bgcolor=color.navy, text_color=color.white, text_size=size.small, text_halign=text.align_center, width=2)
+    
+    // Trend row
+    trendLabel = "Trend"
+    trendValue = trendBlue ? "▲ BULL" : "▼ BEAR"
+    trendColor = trendBlue ? color.blue : color.red
+    table.cell(infoTable, 0, 1, trendLabel, text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 1, trendValue, text_color=trendColor, text_size=size.tiny, text_halign=text.align_right)
+    
+    // HTF Trend row
+    htfLabel = "HTF " + htfTimeframe
+    htfValue = htfTrendBull ? "▲ BULL" : "▼ BEAR"
+    htfColor = htfTrendBull ? color.blue : color.red
+    htfRowColor = (not useHtfFilter or htfTrendOk) ? htfColor : color.gray
+    table.cell(infoTable, 0, 2, htfLabel, text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 2, htfValue, text_color=htfRowColor, text_size=size.tiny, text_halign=text.align_right)
+    
+
+
+//==============================
+// ALERTS
+//==============================
+alertcondition(
+     confirmedBuy,
+     title="BUY ALERT",
+     message="FX MOZO BUY SIGNAL (Confirmed)"
+)
+
+alertcondition(
+     confirmedSell,
+     title="SELL ALERT",
+     message="FX MOZO SELL SIGNAL (Confirmed)"
+)
+
+alertcondition(
+     showUtBot and utBotBuySignal,
+     title="UT Bot BUY ALERT",
+     message="UT Bot BUY SIGNAL (Session)"
+)
+
+alertcondition(
+     showUtBot and utBotSellSignal,
+     title="UT Bot SELL ALERT",
+     message="UT Bot SELL SIGNAL (Session)"
+)
+</code></pre>
+        </div>
+      </div>
+
+      <!-- StrategyTune Tab -->
+      <div class="code-panel" id="panel-strategytune">
+        <div class="code-panel-header">
+          <div class="code-panel-info">
+            <span class="code-panel-tag">AssemblyScript / JSON</span>
+            <h2 class="code-panel-title">StrategyTune Custom Indicator</h2>
+            <p class="code-panel-desc">
+              Custom indicator for StrategyTune. Create a new indicator in the
+              <a href="https://strategytune.com/app" target="_blank" rel="noopener noreferrer" class="bt-link">StrategyTune app</a>,
+              then replace the auto-generated files with the code below.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sub-tabs: metadata.json / calc.ts -->
+        <div class="st-subtabs">
+          <button class="st-subtab active" data-stsub="meta">metadata.json</button>
+          <button class="st-subtab" data-stsub="calc">calc.ts</button>
+        </div>
+
+        <!-- metadata.json panel -->
+        <div class="st-subpanel active" id="stsub-meta">
+          <div class="code-sub-header">
+            <div class="code-sub-info">
+              <span class="code-filename">metadata.json</span>
+              <span class="code-sub-desc">Indicator configuration — inputs, plots, and display settings</span>
+            </div>
+            <button class="btn btn-copy" data-copy="code-st-meta" aria-label="Copy metadata.json">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Code</span>
+            </button>
+          </div>
+          <div class="code-block-wrapper">
+            <pre class="code-block"><code id="code-st-meta">{
+    "name": "Candle Trend Color Strategy",
+    "shortName": "CTC Strategy",
+    "overlay": true,
+    "inputs": {
+        "period": {
+            "type": "int",
+            "default": 20,
+            "min": 2,
+            "max": 200,
+            "title": "CCI Period"
+        },
+        "coeff": {
+            "type": "float",
+            "default": 1,
+            "min": 0.1,
+            "max": 10,
+            "title": "ATR Multiplier"
+        },
+        "ap": {
+            "type": "int",
+            "default": 5,
+            "min": 1,
+            "max": 100,
+            "title": "ATR Period"
+        },
+        "src": {
+            "type": "source"
+        },
+        "londonStart": {
+            "type": "int",
+            "default": 300,
+            "min": 0,
+            "max": 2359,
+            "title": "London Start (HHMM EST)"
+        },
+        "londonEnd": {
+            "type": "int",
+            "default": 500,
+            "min": 0,
+            "max": 2359,
+            "title": "London End (HHMM EST)"
+        },
+        "newyorkStart": {
+            "type": "int",
+            "default": 800,
+            "min": 0,
+            "max": 2359,
+            "title": "New York Start (HHMM EST)"
+        },
+        "newyorkEnd": {
+            "type": "int",
+            "default": 1000,
+            "min": 0,
+            "max": 2359,
+            "title": "New York End (HHMM EST)"
+        },
+        "showHtfLine": {
+            "type": "int",
+            "default": 1,
+            "min": 0,
+            "max": 1,
+            "title": "Show HTF Line"
+        }
+    },
+    "plots": {
+        "magicTrend": {
+            "type": "line",
+            "color": "#2196F3",
+            "linewidth": 3,
+            "colors": [
+                "#0022FC",
+                "#FC0400"
+            ],
+            "title": "Trend Magic"
+        },
+        "htfLine": {
+            "type": "line",
+            "style": "stepLine",
+            "color": "#0022FC",
+            "linewidth": 2,
+            "transparency": 30,
+            "colors": [
+                "#0022FC",
+                "#FC0400"
+            ],
+            "title": "HTF 1H Line",
+            "showInDataWindow": false
+        },
+        "londonBg": {
+            "type": "line",
+            "style": "columns",
+            "color": "#00897B",
+            "transparency": 90,
+            "visible": true,
+            "showOnPriceScale": false,
+            "showInDataWindow": false,
+            "showInStatusLine": false,
+            "title": "London Session"
+        },
+        "newyorkBg": {
+            "type": "line",
+            "style": "columns",
+            "color": "#F23645",
+            "transparency": 90,
+            "visible": true,
+            "showOnPriceScale": false,
+            "showInDataWindow": false,
+            "showInStatusLine": false,
+            "title": "New York Session"
+        }
+    }
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- calc.ts panel -->
+        <div class="st-subpanel" id="stsub-calc">
+          <div class="code-sub-header">
+            <div class="code-sub-info">
+              <span class="code-filename">calc.ts</span>
+              <span class="code-sub-desc">AssemblyScript calculation logic — CCI, ATR, Trend Magic, crossover, HTF touch &amp; session checks</span>
+            </div>
+            <button class="btn btn-copy" data-copy="code-st-calc" aria-label="Copy calc.ts">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Code</span>
+            </button>
+          </div>
+          <div class="code-block-wrapper">
+            <pre class="code-block"><code id="code-st-calc">//==============================
+// TREND MAGIC — StrategyTune
+// Ported from TradingView Pine Script
+//==============================
+
+// Incremental state: committed value from the last completed bar
+let prevMagicTrend: f64 = 0.0;
+let magicTrend: f64 = 0.0;
+
+// HTF stepped close state — timestamp-based hour detection
+let htfLineVal: f64 = 0.0;
+let prevHtfLineVal: f64 = 0.0;
+let prevUtcHour: i32 = -1;
+
+function calc(ctx: Context): void {
+  const period: i32 = ctx.inputs.period;
+  const coeff: f64 = ctx.inputs.coeff;
+  const ap: i32 = ctx.inputs.ap;
+
+  // Need enough bars for both ATR (ap) and CCI (period)
+  let neededBars: i32 = period;
+  if (ap > neededBars) neededBars = ap;
+  neededBars += 1;
+  if (ctx.bars.count < neededBars) return;
+
+  //==============================
+  // SESSION BACKGROUNDS
+  // Based on EST (America/New_York). Uses UTC-5 offset.
+  // Session start/end times are configurable with minute precision.
+  // Defaults: London 03:00-05:00 EST, New York 08:00-10:00 EST.
+  //
+  // Note: DST (EDT, UTC-4) shifts these by 1 hour. To handle DST
+  // accurately you'd need date-based DST detection (2nd Sun Mar -
+  // 1st Sun Nov). For simplicity a constant EST offset is used.
+  //==============================
+  const t: i32 = <i32>ctx.bar.timestamp;
+  // Total minutes since midnight in EST (UTC-5)
+  const utcMinutes: i32 = (t / 60) % (24 * 60);
+  const estMinutes: i32 = (utcMinutes - 5 * 60 + 24 * 60) % (24 * 60);
+
+  // Inputs are in HHMM format (e.g. 830 = 08:30). Parse hour & minute.
+  const londonStartMin: i32 = (ctx.inputs.londonStart / 100) * 60 + (ctx.inputs.londonStart % 100);
+  const londonEndMin: i32 = (ctx.inputs.londonEnd / 100) * 60 + (ctx.inputs.londonEnd % 100);
+  const newyorkStartMin: i32 = (ctx.inputs.newyorkStart / 100) * 60 + (ctx.inputs.newyorkStart % 100);
+  const newyorkEndMin: i32 = (ctx.inputs.newyorkEnd / 100) * 60 + (ctx.inputs.newyorkEnd % 100);
+
+  const inLondonSession: bool = estMinutes >= londonStartMin && estMinutes < londonEndMin;
+  const inNewYorkSession: bool = estMinutes >= newyorkStartMin && estMinutes < newyorkEndMin;
+
+  // Full-height column at 2x the bar's high spans the entire chart
+  // vertically, simulating bgcolor() with 90% transparency.
+  // Using a value proportional to price avoids axis-distortion risk.
+  const fullBg: f64 = ctx.bar.high + Math.abs(ctx.bar.high);
+  ctx.plots.londonBg = inLondonSession ? fullBg : NaN;
+  ctx.plots.newyorkBg = inNewYorkSession ? fullBg : NaN;
+
+  //==============================
+  // ATR — SMA of True Range
+  //==============================
+  let trSum: f64 = 0.0;
+  for (let i: i32 = 0; i < ap; i++) {
+    const h: f64 = ctx.bars.high(i);
+    const l: f64 = ctx.bars.low(i);
+    const pc: f64 = ctx.bars.close(i + 1);
+    const tr: f64 = Math.max(h - l, Math.max(Math.abs(h - pc), Math.abs(l - pc)));
+    trSum += tr;
+  }
+  const atr: f64 = trSum / <f64>ap;
+
+  //==============================
+  // CCI — Commodity Channel Index
+  // using source (resolved to ctx.bars.close by the platform)
+  //==============================
+  // Pass 1: SMA of source
+  let srcSum: f64 = 0.0;
+  for (let i: i32 = 0; i < period; i++) {
+    srcSum += ctx.bars.close(i);
+  }
+  const srcSma: f64 = srcSum / <f64>period;
+
+  // Pass 2: Mean Deviation
+  let mdSum: f64 = 0.0;
+  for (let i: i32 = 0; i < period; i++) {
+    mdSum += Math.abs(ctx.bars.close(i) - srcSma);
+  }
+  const md: f64 = mdSum / <f64>period;
+
+  let cci: f64 = 0.0;
+  if (md != 0.0) {
+    cci = (ctx.bar.close - srcSma) / (0.015 * md);
+  }
+
+  //==============================
+  // MAGIC TREND
+  //==============================
+  const upT: f64 = ctx.bar.low - atr * coeff;
+  const downT: f64 = ctx.bar.high + atr * coeff;
+
+  if (ctx.barIndex == 0) {
+    // First bar — initialise with whichever side CCI is on
+    magicTrend = cci >= 0.0 ? upT : downT;
+  } else if (ctx.isNewBar) {
+    // Commit previous bar's value, then advance
+    prevMagicTrend = magicTrend;
+    if (cci >= 0.0) {
+      // Bullish — trend line only moves up
+      magicTrend = upT < prevMagicTrend ? prevMagicTrend : upT;
+    } else {
+      // Bearish — trend line only moves down
+      magicTrend = downT > prevMagicTrend ? prevMagicTrend : downT;
+    }
+  } else {
+    // Live tick — recompute tentative value from committed state
+    if (cci >= 0.0) {
+      magicTrend = upT < prevMagicTrend ? prevMagicTrend : upT;
+    } else {
+      magicTrend = downT > prevMagicTrend ? prevMagicTrend : downT;
+    }
+  }
+
+  //==============================
+  // HTF 1H LINE — Close from previous hour, stepped
+  // Simulates request.security(ticker, "60", close) by detecting
+  // actual hourly boundaries from the bar timestamp.
+  // On the first bar of each new UTC hour, the line updates to the
+  // previous bar's close (= the just-completed hour's close).
+  // Works automatically on any chart timeframe — no config needed.
+  //==============================
+  const utcHour: i32 = (<i32>ctx.bar.timestamp / 3600) % 24;
+  if (prevUtcHour < 0) {
+    // First bar — initialise
+    htfLineVal = ctx.bar.close;
+    prevHtfLineVal = ctx.bar.close;
+    prevUtcHour = utcHour;
+  } else if (utcHour != prevUtcHour) {
+    // New hour — step line to the previous bar's close
+    prevHtfLineVal = htfLineVal;
+    htfLineVal = ctx.bars.close(1);
+    prevUtcHour = utcHour;
+  }
+
+  //==============================
+  // PLOT
+  //==============================
+  ctx.plots.magicTrend = magicTrend;
+  ctx.plots.magicTrendColor = cci >= 0.0 ? 0 : 1;
+
+  // HTF line — stepped close, colored by HTF direction
+  const htfBull: bool = htfLineVal >= prevHtfLineVal;
+  ctx.plots.htfLine = ctx.inputs.showHtfLine != 0 ? htfLineVal : NaN;
+  ctx.plots.htfLineColor = htfBull ? 0 : 1;
+}
+</code></pre>
+          </div>
+        </div>
+
+        <div class="code-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span><strong>Note:</strong> This code uses AssemblyScript syntax for StrategyTune's WebAssembly sandbox. Create a new custom indicator in the
+          <a href="https://strategytune.com/app" target="_blank" rel="noopener noreferrer" class="bt-link">StrategyTune app</a>,
+          then replace the auto-generated <code>metadata.json</code> and <code>calc.ts</code> files with the code above.
+          Refer to <a href="https://strategytune.com/docs" target="_blank" rel="noopener noreferrer" class="bt-link">strategytune.com/docs</a> for API details.</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-accent">CTC</span>
+          <span class="logo-text">Strategy</span>
+          <p class="footer-desc">by FX_MOZO</p>
+        </div>
+        <div class="footer-links">
+          <a href="/">Home</a>
+          <a href="/#overview">Overview</a>
+          <a href="/#rules">Rules</a>
+          <a href="/#parameters">Parameters</a>
+          <a href="/#backtesting">Backtesting</a>
+          <a href="/code">Code</a>
+        </div>
+        <div class="footer-disclaimer">
+          <p><strong>Disclaimer:</strong> This is an educational and informational resource. Trading forex carries significant risk. Past performance and simulated data do not guarantee future results. Always test strategies thoroughly before using with real capital.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 FX_MOZO. All rights reserved. Built with Pine Script v6.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // ── Tab Switching ────────────────────────────────────
+      const tabs = document.querySelectorAll('.code-tab');
+      const panels = {
+        tradingview: document.getElementById('panel-tradingview'),
+        strategytune: document.getElementById('panel-strategytune')
+      };
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          tabs.forEach(function (t) { t.classList.remove('active'); });
+          this.classList.add('active');
+
+          Object.keys(panels).forEach(function (key) {
+            panels[key].classList.remove('active');
+          });
+          var target = this.getAttribute('data-tab');
+          if (panels[target]) panels[target].classList.add('active');
+        });
+      });
+
+      // ── Copy to Clipboard ────────────────────────────────
+      document.querySelectorAll('.btn-copy').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var targetId = this.getAttribute('data-copy');
+          var codeEl = document.getElementById(targetId);
+          if (!codeEl) return;
+
+          var text = codeEl.textContent;
+          navigator.clipboard.writeText(text).then(function () {
+            var span = btn.querySelector('span');
+            var original = span.textContent;
+            span.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(function () {
+              span.textContent = original;
+              btn.classList.remove('copied');
+            }, 2000);
+          }).catch(function () {
+            // Fallback: select + execCommand
+            var range = document.createRange();
+            range.selectNodeContents(codeEl);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            try {
+              document.execCommand('copy');
+              var span = btn.querySelector('span');
+              var original = span.textContent;
+              span.textContent = 'Copied!';
+              btn.classList.add('copied');
+              setTimeout(function () {
+                span.textContent = original;
+                btn.classList.remove('copied');
+              }, 2000);
+            } catch (e) {}
+          });
+        });
+      });
+
+      // ── StrategyTune Sub-tab Switching ──────────────────
+      const stSubTabs = document.querySelectorAll('.st-subtab');
+      const stSubPanels = {};
+      document.querySelectorAll('.st-subpanel').forEach(function (p) {
+        stSubPanels[p.id] = p;
+      });
+
+      stSubTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          stSubTabs.forEach(function (t) { t.classList.remove('active'); });
+          this.classList.add('active');
+
+          Object.keys(stSubPanels).forEach(function (key) {
+            stSubPanels[key].classList.remove('active');
+          });
+          var target = 'stsub-' + this.getAttribute('data-stsub');
+          if (stSubPanels[target]) stSubPanels[target].classList.add('active');
+        });
+      });
+
+      // ── Side Drawer ──────────────────────────────────────
+      const menuBtn = document.getElementById('menuBtnCode');
+      const drawer = document.getElementById('sideDrawer');
+      const drawerOverlay = document.getElementById('drawerOverlay');
+      const drawerClose = document.querySelector('.drawer-close');
+
+      function openDrawer() {
+        drawer.classList.add('open');
+        drawerOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeDrawer() {
+        drawer.classList.remove('open');
+        drawerOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
+      }
+
+      if (menuBtn) menuBtn.addEventListener('click', openDrawer);
+      if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+      if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+      });
+
+      document.querySelectorAll('.drawer-link').forEach(function (link) {
+        link.addEventListener('click', closeDrawer);
+      });
+
+      // ── Active Nav Link ──────────────────────────────────
+      document.querySelectorAll('.nav-link').forEach(function (link) {
+        if (link.getAttribute('href') === '/code') {
+          link.classList.add('active-page');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

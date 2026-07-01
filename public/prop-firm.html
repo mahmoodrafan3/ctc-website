@@ -486,7 +486,22 @@
     // Google Sheets Live Data Configuration
     // ═══════════════════════════════════════════════════════════
 
-    const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbx_VxRMQdjOwrCE5cfxu1je7nU41VIhCYmMLbnJTFhDbT-tVdskHt80zRtvdh4_2tEN/exec';
+    // ═══════════════════════════════════════════════════════════
+    // Google Sheets API URL — fetched from server to keep it out of source control
+    // ═══════════════════════════════════════════════════════════
+
+    let SHEETS_API_URL = '';
+
+    async function fetchConfig() {
+      try {
+        var res = await fetch('/api/config');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var config = await res.json();
+        SHEETS_API_URL = config.sheetsApiUrl || '';
+      } catch (e) {
+        console.warn('⚠️ Could not fetch config from server:', e.message);
+      }
+    }
 
     // ═══════════════════════════════════════════════════════════
     // Default Fallback Data (used when sheet is unavailable)
@@ -692,6 +707,11 @@
     // ═══════════════════════════════════════════════════════════
 
     async function loadSheetData() {
+      if (!SHEETS_API_URL) {
+        console.warn('⚠️ No SHEETS_API_URL configured, using defaults');
+        appData = mergeWithDefaults({});
+        return;
+      }
       try {
         var res = await fetch(SHEETS_API_URL);
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -970,6 +990,7 @@
     // ═══════════════════════════════════════════════════════════
 
     document.addEventListener('DOMContentLoaded', async function () {
+      await fetchConfig();
       await loadSheetData();
       initUI();
     });

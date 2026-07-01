@@ -7,6 +7,13 @@ const PORT = process.env.PORT || 3000;
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API endpoint to securely provide config from environment variables
+app.get('/api/config', (req, res) => {
+  res.json({
+    sheetsApiUrl: process.env.SHEETS_API_URL || ''
+  });
+});
+
 // Route for /code - serve code.html
 app.get('/code', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'code.html'));

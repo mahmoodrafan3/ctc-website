@@ -12,6 +12,11 @@ app.get('/code', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'code.html'));
 });
 
+// Route for /prop-firm - serve prop-firm.html
+app.get('/prop-firm', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'prop-firm.html'));
+});
+
 // All other routes go to index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

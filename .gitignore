@@ -10,3 +10,6 @@ yarn-debug.log*
 yarn-error.log*
 .vscode/
 .idea/
+.aider*
+SHEET_SETUP.md
+scripts/*

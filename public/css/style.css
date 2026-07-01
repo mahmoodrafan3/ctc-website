@@ -1881,35 +1881,544 @@ code {
 }
 
 /* ============================================================
-   CODE PAGE — HERO
+   PROP FIRM PAGE — HERO
    ============================================================ */
-.code-hero {
-  padding: 120px 0 60px;
+.pf-hero {
+  padding: 24px 0 16px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pf-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pf-hero-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+/* ============================================================
+   PROP FIRM PAGE — TABS
+   ============================================================ */
+.pf-tabs-bar {
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 100;
+}
+
+.pf-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.pf-tab {
+  padding: 16px 28px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.pf-tab:hover {
+  color: var(--gray-900);
+  background: rgba(0,0,0,0.02);
+}
+
+.pf-tab.active {
+  color: var(--gray-900);
+  border-bottom-color: var(--gray-900);
+}
+
+/* ============================================================
+   PROP FIRM PAGE — MAIN SECTION
+   ============================================================ */
+.pf-section {
+  padding: 60px 0 100px;
   background: var(--white);
 }
 
-.code-hero-content {
-  max-width: 720px;
-  margin: 0 auto;
+.pf-panel {
+  display: none;
+}
+
+.pf-panel.active {
+  display: block;
+}
+
+.pf-firm-bar {
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 14px 0;
+}
+
+.pf-firm-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.pf-referral-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: var(--gray-900);
+  color: var(--white);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pf-referral-btn:hover {
+  background: var(--black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+.pf-referral-btn svg {
+  transition: transform 0.2s;
+}
+
+.pf-referral-btn:hover svg {
+  transform: translate(1px, -1px);
+}.pf-firm-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.pf-panel-intro {
+  max-width: 800px;
+  margin: 0 auto 48px;
   text-align: center;
 }
 
-.code-hero-title {
-  font-size: 2.5rem;
+.pf-panel-title {
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--gray-900);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   letter-spacing: -0.02em;
 }
 
-.code-hero-desc {
-  font-size: 1.05rem;
+.pf-panel-desc {
+  font-size: 0.95rem;
   color: var(--gray-600);
   line-height: 1.7;
 }
 
-.code-hero-desc strong {
+.pf-panel-desc strong {
   color: var(--gray-900);
+}
+
+/* ============================================================
+   PROP FIRM — SELECTORS
+   ============================================================ */
+.pf-selectors-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.pf-selectors-row .pf-select-section {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.pf-select-section {
+  max-width: 400px;
+  margin: 0 auto 32px;
+}
+
+.pf-select-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pf-select-wrapper {
+  position: relative;
+}
+
+.pf-select {
+  width: 100%;
+  padding: 14px 20px;
+  padding-right: 44px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: border-color 0.2s;
+}
+
+.pf-select:hover {
+  border-color: var(--gray-400);
+}
+
+.pf-select:focus {
+  outline: none;
+  border-color: var(--gray-900);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+
+.pf-select-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-500);
+  pointer-events: none;
+}
+
+/* ============================================================
+   PROP FIRM — CLASSIC LAYOUT (Table + Price Card)
+   ============================================================ */
+.pf-classic-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.pf-detail-table-section {
+  flex: 0 0 auto;
+  width: 560px;
+  max-width: 100%;
+}
+
+.pf-detail-table-wrapper {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.pf-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.pf-detail-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.pf-detail-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.pf-detail-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.pf-dt-label {
+  padding: 10px 20px;
+  color: var(--gray-600);
+  font-size: 0.82rem;
+  font-weight: 500;
+  width: 50%;
+  border-right: 1px solid var(--gray-100);
+}
+
+.pf-dt-value {
+  padding: 10px 20px;
+  color: var(--gray-900);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   PROP FIRM — PRICE & COUPON CARD
+   ============================================================ */
+.pf-price-card {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: calc(var(--nav-height) + 60px);
+}
+
+.pf-price-amount {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pf-price-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.pf-price-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.pf-coupon-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-coupon-heading {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.pf-coupon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf-coupon-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s;
+}
+
+.pf-coupon-item:hover {
+  border-color: var(--gray-400);
+}
+
+.pf-coupon-code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: 0.03em;
+}
+
+.pf-coupon-reward {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--green);
+  background: rgba(22, 163, 74, 0.1);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.pf-price-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--gray-900);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.pf-price-cta:hover {
+  background: var(--black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+.pf-price-cta svg {
+  transition: transform 0.2s;
+}
+
+.pf-price-cta:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* ============================================================
+   PROP FIRM — PROHIBITED
+   ============================================================ */
+.pf-prohibited {
+  margin-bottom: 40px;
+  padding: 24px 28px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+}
+
+.pf-prohibited-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin-bottom: 14px;
+}
+
+.pf-prohibited-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pf-prohibited-item {
+  font-size: 0.82rem;
+  color: #7f1d1d;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   PROP FIRM — DISCLAIMER
+   ============================================================ */
+.pf-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  color: #991b1b;
+  line-height: 1.6;
+}
+
+.pf-disclaimer svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #dc2626;
+}
+
+.pf-disclaimer strong {
+  color: #7f1d1d;
+}
+
+/* ============================================================
+   PROP FIRM — RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {    .pf-prohibited-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .pf-classic-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pf-price-card {
+    width: 100%;
+    position: static;
+  }
+
+  .pf-select-section {
+    max-width: 100%;
+  }
+
+  .pf-dt-label,
+  .pf-dt-value {
+    padding: 10px 14px;
+    font-size: 0.78rem;
+  }
+
+  .pf-hero {
+    padding: 20px 0 12px;
+  }
+
+  .pf-tab {
+    padding: 14px 16px;
+    font-size: 0.8rem;
+  }
+
+  .pf-prohibited-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   CODE PAGE — HERO
+   ============================================================ */
+.code-hero {
+  padding: 24px 0 16px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.code-hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.code-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.code-hero-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0;
 }
 
 /* ============================================================
@@ -2187,11 +2696,7 @@ code {
 
 @media (max-width: 768px) {
   .code-hero {
-    padding: 100px 0 40px;
-  }
-
-  .code-hero-title {
-    font-size: 1.75rem;
+    padding: 20px 0 12px;
   }
 
   .code-tab {

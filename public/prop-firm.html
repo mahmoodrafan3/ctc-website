@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prop Firms — CTC Strategy | FX MOZO</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <div class="nav-left">
+        <button class="nav-menu-btn" id="menuBtnPF" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="/" class="nav-logo">
+          <span class="logo-accent">CTC</span>
+          <span class="logo-text">Strategy</span>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/#overview" class="nav-link">Overview</a>
+        <a href="/#rules" class="nav-link">Rules</a>
+        <a href="/#parameters" class="nav-link">Parameters</a>
+        <a href="/#backtesting" class="nav-link">Backtesting</a>
+        <a href="/prop-firm" class="nav-link active-page">Prop Firm</a>
+        <a href="/code" class="nav-link">Code</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Side Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="side-drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Menu</span>
+      <button class="drawer-close" aria-label="Close menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="/" class="drawer-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="/prop-firm" class="drawer-link active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+          <path d="M2 12l10 5 10-5"></path>
+        </svg>
+        <span>Prop Firm</span>
+      </a>
+      <a href="/code" class="drawer-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <span>Indicator Code</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Hero Section -->
+  <section class="pf-hero">
+    <div class="container">
+      <div class="pf-hero-inner">
+        <h1 class="pf-hero-title">Prop Firm</h1>
+      </div>
+    </div>
+  </section>
+
+  <!-- FundedHive Heading -->
+  <section class="pf-firm-bar">
+    <div class="container">
+      <div class="pf-firm-header">
+        <h2 class="pf-firm-name">FundedHive</h2>
+        <a href="https://fundedhive.com/?ref=02QEFMG2KY" target="_blank" rel="noopener" class="pf-referral-btn">
+          Get Funded
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17l9.2-9.2M17 17V7H7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Model Tabs Bar -->
+  <div class="pf-tabs-bar">
+    <div class="container">
+      <div class="pf-tabs">
+        <button class="pf-tab active" data-pftab="classic">2-Step Classic</button>
+        <button class="pf-tab" data-pftab="pfp">Pay From Profits</button>
+        <button class="pf-tab" data-pftab="instant">Instant Growth</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <section class="pf-section">
+    <div class="container">
+
+      <!-- === 2-STEP CLASSIC === -->
+      <div class="pf-panel active" id="pfpanel-classic">
+
+        <!-- Account Size Selector -->
+        <div class="pf-select-section">
+          <label class="pf-select-label" for="classicSize">Select Account Size</label>
+          <div class="pf-select-wrapper">
+            <select id="classicSize" class="pf-select">
+              <option value="2000" selected>$2,000</option>
+              <option value="5000">$5,000</option>
+              <option value="10000">$10,000</option>
+              <option value="25000" >$25,000</option>
+              <option value="50000">$50,000</option>
+              <option value="100000">$100,000</option>
+              <option value="200000">$200,000</option>
+            </select>
+            <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Details Table + Price Card -->
+        <div class="pf-classic-layout">
+          <div class="pf-detail-table-section">
+            <div class="pf-detail-table-wrapper">
+              <table class="pf-detail-table">
+                <tbody id="classicDetailsBody">
+                  <tr><td class="pf-dt-label">Profit Target — Phase 1</td><td class="pf-dt-value">8%</td></tr>
+                  <tr><td class="pf-dt-label">Profit Target — Phase 2</td><td class="pf-dt-value">6%</td></tr>
+                  <tr><td class="pf-dt-label">Funded Target</td><td class="pf-dt-value">No monthly target</td></tr>
+                  <tr><td class="pf-dt-label">Daily Loss Limit</td><td class="pf-dt-value">3% – 5% (Tier dependent)</td></tr>
+                  <tr><td class="pf-dt-label">Max Loss Per Trade</td><td class="pf-dt-value">3%</td></tr>
+                  <tr><td class="pf-dt-label">Overall Drawdown</td><td class="pf-dt-value">10% (Static)</td></tr>
+                  <tr><td class="pf-dt-label">Trading Duration</td><td class="pf-dt-value">Unlimited</td></tr>
+                  <tr><td class="pf-dt-label">Minimum Trading Days</td><td class="pf-dt-value">None</td></tr>
+                  <tr><td class="pf-dt-label">Consistency Rule</td><td class="pf-dt-value">No</td></tr>
+                  <tr><td class="pf-dt-label">Profit Split — NewBee</td><td class="pf-dt-value">70%</td></tr>
+                  <tr><td class="pf-dt-label">Profit Split — WorkerBee</td><td class="pf-dt-value">80%</td></tr>
+                  <tr><td class="pf-dt-label">Profit Split — QueenBee</td><td class="pf-dt-value">90% – 99%</td></tr>
+                  <tr><td class="pf-dt-label">Leverage — NewBee</td><td class="pf-dt-value">1:50 (Dynamic)</td></tr>
+                  <tr><td class="pf-dt-label">Leverage — WorkerBee</td><td class="pf-dt-value">1:100 (Dynamic)</td></tr>
+                  <tr><td class="pf-dt-label">Leverage — QueenBee</td><td class="pf-dt-value">1:200 (Dynamic)</td></tr>
+                  <tr><td class="pf-dt-label">News Trading</td><td class="pf-dt-value">Allowed</td></tr>
+                  <tr><td class="pf-dt-label">EA / Bots</td><td class="pf-dt-value">Yes (no HFT)</td></tr>
+                  <tr><td class="pf-dt-label">Swap-Free</td><td class="pf-dt-value">100%</td></tr>
+                  <tr><td class="pf-dt-label">Stop Loss</td><td class="pf-dt-value">Required</td></tr>
+                  <tr><td class="pf-dt-label">Platform</td><td class="pf-dt-value">cTrader</td></tr>
+                  <tr><td class="pf-dt-label">Payout Method</td><td class="pf-dt-value">USDC via smart contract</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Price & Coupon Card -->
+          <div class="pf-price-card" id="classicPriceCard">
+            <div class="pf-price-amount">
+              <span class="pf-price-label">Total Challenge Fee</span>
+              <span class="pf-price-value" id="classicPrice">$15</span>
+            </div>
+
+            <div class="pf-coupon-section">
+              <h4 class="pf-coupon-heading">Available Coupons</h4>
+              <div class="pf-coupon-list">
+                <div class="pf-coupon-item">
+                  <div class="pf-coupon-code">MOZO10</div>
+                  <div class="pf-coupon-reward">10% OFF</div>
+                </div>
+                <div class="pf-coupon-item">
+                  <div class="pf-coupon-code">MOZO20</div>
+                  <div class="pf-coupon-reward">20% OFF</div>
+                </div>
+              </div>
+            </div>
+
+            <a href="https://fundedhive.com/?ref=02QEFMG2KY" target="_blank" rel="noopener" class="pf-price-cta">
+              Get Funded
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 17l9.2-9.2M17 17V7H7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Prohibited Actions -->
+        <div class="pf-prohibited">
+          <h4 class="pf-prohibited-title">Prohibited Actions</h4>
+          <div class="pf-prohibited-grid">
+            <div class="pf-prohibited-item">❌ High-Frequency Trading (HFT) bots</div>
+            <div class="pf-prohibited-item">❌ Arbitrage strategies</div>
+            <div class="pf-prohibited-item">❌ Reverse trading</div>
+            <div class="pf-prohibited-item">❌ Copy trading</div>
+            <div class="pf-prohibited-item">❌ Hedging across accounts</div>
+            <div class="pf-prohibited-item">❌ Exploiting technical glitches</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === PAY FROM PROFITS === -->
+      <div class="pf-panel" id="pfpanel-pfp">
+
+        <!-- Selectors Row -->
+        <div class="pf-selectors-row">
+          <div class="pf-select-section" style="margin-bottom:0;">
+            <label class="pf-select-label" for="pfpSize">Select Account Size</label>
+            <div class="pf-select-wrapper">
+              <select id="pfpSize" class="pf-select">
+                <option value="5000" selected>$5,000</option>
+                <option value="10000">$10,000</option>
+                <option value="25000" >$25,000</option>
+                <option value="50000">$50,000</option>
+                <option value="100000">$100,000</option>
+                <option value="200000">$200,000</option>
+              </select>
+              <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="pf-select-section" style="margin-bottom:0;">
+            <label class="pf-select-label" for="pfpStep">Step Type</label>
+            <div class="pf-select-wrapper">
+              <select id="pfpStep" class="pf-select">
+                <option value="1step" selected>1-Step</option>
+                <option value="2step" >2-Step</option>
+              </select>
+              <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="pf-select-section" style="margin-bottom:0;">
+            <label class="pf-select-label" for="pfpRisk">Risk Category</label>
+            <div class="pf-select-wrapper">
+              <select id="pfpRisk" class="pf-select">
+                <option value="low" selected>Low Risk</option>
+                <option value="moderate" >Moderate Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="high">High Risk</option>
+              </select>
+              <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details Table + Price Card -->
+        <div class="pf-classic-layout">
+          <div class="pf-detail-table-section">
+            <div class="pf-detail-table-wrapper">
+              <table class="pf-detail-table">
+                <tbody id="pfpDetailsBody">
+                  <tr><td class="pf-dt-label">Risk Category</td><td class="pf-dt-value" id="pfpRiskLabel">Moderate Risk</td></tr>
+                  <tr><td class="pf-dt-label">Step Type</td><td class="pf-dt-value" id="pfpStepLabel">2-Step</td></tr>
+                  <tr><td class="pf-dt-label" id="pfpTarget1Label">Profit Target — Phase 1</td><td class="pf-dt-value" id="pfpTarget1">8%</td></tr>
+                  <tr id="pfpTarget2Row"><td class="pf-dt-label">Profit Target — Phase 2</td><td class="pf-dt-value" id="pfpTarget2">6%</td></tr>
+                  <tr><td class="pf-dt-label">Funded Split</td><td class="pf-dt-value">80% Fixed</td></tr>
+                  <tr><td class="pf-dt-label">Daily Loss Limit</td><td class="pf-dt-value" id="pfpDailyLoss">3%</td></tr>
+                  <tr><td class="pf-dt-label">Max Loss Per Trade</td><td class="pf-dt-value" id="pfpMaxLoss">1.5%</td></tr>
+                  <tr><td class="pf-dt-label">Overall Drawdown</td><td class="pf-dt-value" id="pfpDrawdown">6%</td></tr>
+                  <tr><td class="pf-dt-label">Maximum Leverage</td><td class="pf-dt-value" id="pfpLeverage">1:100</td></tr>
+                  <tr><td class="pf-dt-label">Stop Loss</td><td class="pf-dt-value" id="pfpStopLoss">Closing only</td></tr>
+                  <tr><td class="pf-dt-label">Fee Structure</td><td class="pf-dt-value" id="pfpFee">Pay 100% from first payout</td></tr>
+                  <tr><td class="pf-dt-label">Trading Duration</td><td class="pf-dt-value">Unlimited</td></tr>
+                  <tr><td class="pf-dt-label">Minimum Trading Days</td><td class="pf-dt-value" id="pfpMinDays">3 days per phase</td></tr>
+                  <tr><td class="pf-dt-label">Consistency Rule</td><td class="pf-dt-value">No</td></tr>
+                  <tr><td class="pf-dt-label">News Trading</td><td class="pf-dt-value">Allowed</td></tr>
+                  <tr><td class="pf-dt-label">EA / Bots</td><td class="pf-dt-value">Yes (no HFT)</td></tr>
+                  <tr><td class="pf-dt-label">Swap-Free</td><td class="pf-dt-value">100%</td></tr>
+                  <tr><td class="pf-dt-label">Platform</td><td class="pf-dt-value">cTrader</td></tr>
+                  <tr><td class="pf-dt-label">Payout Method</td><td class="pf-dt-value">USDC via smart contract</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Price & Coupon Card -->
+          <div class="pf-price-card" id="pfpPriceCard">
+            <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
+              <span class="pf-price-label">Access Fee</span>
+              <span class="pf-price-value" style="font-size:1.5rem;" id="pfpTotalFee">$19</span>
+            </div>
+            <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
+              <span class="pf-price-label">Funded Account Deduction</span>
+              <span class="pf-price-value" style="font-size:1.5rem;" id="pfpDeduction">$49</span>
+            </div>
+
+            <div class="pf-coupon-section">
+              <h4 class="pf-coupon-heading">Available Coupons</h4>
+              <div class="pf-coupon-list">
+                <div class="pf-coupon-item">
+                  <div class="pf-coupon-code">MOZO10</div>
+                  <div class="pf-coupon-reward">10% OFF</div>
+                </div>
+                <div class="pf-coupon-item">
+                  <div class="pf-coupon-code">MOZO20</div>
+                  <div class="pf-coupon-reward">20% OFF</div>
+                </div>
+              </div>
+            </div>
+
+            <a href="https://fundedhive.com/?ref=02QEFMG2KY" target="_blank" rel="noopener" class="pf-price-cta">
+              Get Funded
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 17l9.2-9.2M17 17V7H7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="pf-prohibited">
+          <h4 class="pf-prohibited-title">Prohibited Actions</h4>
+          <div class="pf-prohibited-grid">
+            <div class="pf-prohibited-item">❌ High-Frequency Trading (HFT) bots</div>
+            <div class="pf-prohibited-item">❌ Arbitrage strategies</div>
+            <div class="pf-prohibited-item">❌ Reverse trading</div>
+            <div class="pf-prohibited-item">❌ Copy trading</div>
+            <div class="pf-prohibited-item">❌ Hedging across accounts</div>
+            <div class="pf-prohibited-item">❌ Exploiting technical glitches</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === INSTANT GROWTH (GOLDEN TOWER) === -->
+      <div class="pf-panel" id="pfpanel-instant">
+
+        <!-- Level Selector -->
+        <div class="pf-select-section">
+          <label class="pf-select-label" for="instantLevel">Select Level</label>
+          <div class="pf-select-wrapper">
+            <select id="instantLevel" class="pf-select">
+              <option value="1" selected>Level 1 — $10,000</option>
+              <option value="2">Level 2 — $20,000</option>
+              <option value="3">Level 3 — $40,000</option>
+              <option value="4" >Level 4 — $80,000</option>
+              <option value="5">Level 5 — $160,000</option>
+              <option value="6">Level 6 — $240,000</option>
+              <option value="7">Level 7 — $360,000</option>
+              <option value="8">Level 8 — $480,000</option>
+              <option value="9">Level 9 — $640,000</option>
+              <option value="10">Level 10 — $1,000,000</option>
+            </select>
+            <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Details Table + Price Card -->
+        <div class="pf-classic-layout">
+          <div class="pf-detail-table-section">
+            <div class="pf-detail-table-wrapper">
+              <table class="pf-detail-table">
+                <tbody id="instantDetailsBody">
+                  <tr><td class="pf-dt-label">Starting Balance</td><td class="pf-dt-value">$10,000 (Level 1)</td></tr>
+                  <tr><td class="pf-dt-label">Max Account</td><td class="pf-dt-value">$1,000,000 (Level 10)</td></tr>
+                  <tr><td class="pf-dt-label">Profit Target Per Level</td><td class="pf-dt-value">6%</td></tr>
+                  <tr><td class="pf-dt-label">Upgrade Fee</td><td class="pf-dt-value">2% of new balance</td></tr>
+                  <tr><td class="pf-dt-label">Daily Loss Limit</td><td class="pf-dt-value">None</td></tr>
+                  <tr><td class="pf-dt-label">Max Loss Per Trade</td><td class="pf-dt-value">2%</td></tr>
+                  <tr><td class="pf-dt-label">Overall Drawdown</td><td class="pf-dt-value">6% (Static)</td></tr>
+                  <tr><td class="pf-dt-label">Profit Split</td><td class="pf-dt-value">80% Fixed</td></tr>
+                  <tr><td class="pf-dt-label">Daily Withdrawal Cap</td><td class="pf-dt-value">$2,000</td></tr>
+                  <tr><td class="pf-dt-label">Level 1 Execution</td><td class="pf-dt-value">B-Book</td></tr>
+                  <tr><td class="pf-dt-label">Levels 2+ Execution</td><td class="pf-dt-value">A-Book (AADS)</td></tr>
+                  <tr><td class="pf-dt-label">News Trading</td><td class="pf-dt-value">Allowed</td></tr>
+                  <tr><td class="pf-dt-label">EA / Bots</td><td class="pf-dt-value">Yes (no HFT)</td></tr>
+                  <tr><td class="pf-dt-label">Swap-Free</td><td class="pf-dt-value">100%</td></tr>
+                  <tr><td class="pf-dt-label">Stop Loss</td><td class="pf-dt-value">Required</td></tr>
+                  <tr><td class="pf-dt-label">Platform</td><td class="pf-dt-value">cTrader</td></tr>
+                  <tr><td class="pf-dt-label">Payout Method</td><td class="pf-dt-value">USDC via smart contract</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Price & Coupon Card -->
+          <div class="pf-price-card" id="instantPriceCard">
+            <div class="pf-price-amount">
+              <span class="pf-price-label" id="instantLevelLabel">Upgrade to Level 5</span>
+              <span class="pf-price-value" id="instantUpgradeFee">$3,200</span>
+            </div>
+            <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
+              <span class="pf-price-label">New Account Balance</span>
+              <span class="pf-price-value" style="font-size:1.5rem;" id="instantNewBalance">$160,000</span>
+            </div>
+
+            <div class="pf-coupon-section">
+              <h4 class="pf-coupon-heading">Available Coupons</h4>
+              <div class="pf-coupon-list">
+                <div class="pf-coupon-item">
+                  <div class="pf-coupon-code">MOZO10</div>
+                  <div class="pf-coupon-reward">10% OFF</div>
+                </div>
+                <div class="pf-coupon-item">
+                  <div class="pf-coupon-code">MOZO20</div>
+                  <div class="pf-coupon-reward">20% OFF</div>
+                </div>
+              </div>
+            </div>
+
+            <a href="https://fundedhive.com/?ref=02QEFMG2KY" target="_blank" rel="noopener" class="pf-price-cta">
+              Get Funded
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 17l9.2-9.2M17 17V7H7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="pf-prohibited">
+          <h4 class="pf-prohibited-title">Prohibited Actions</h4>
+          <div class="pf-prohibited-grid">
+            <div class="pf-prohibited-item">❌ High-Frequency Trading (HFT) bots</div>
+            <div class="pf-prohibited-item">❌ Arbitrage strategies</div>
+            <div class="pf-prohibited-item">❌ Reverse trading</div>
+            <div class="pf-prohibited-item">❌ Copy trading</div>
+            <div class="pf-prohibited-item">❌ Hedging across accounts</div>
+            <div class="pf-prohibited-item">❌ Exploiting technical glitches</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="pf-disclaimer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span><strong>Disclaimer:</strong> FundedHive provides simulated trading environments. Participation in challenges does not guarantee funding in real or live market accounts. Rules regarding leverage, drawdown, and risk groups can be updated. Always review the latest Terms and Conditions on the official FundedHive website before proceeding.</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-accent">CTC</span>
+          <span class="logo-text">Strategy</span>
+          <p class="footer-desc">by FX_MOZO</p>
+        </div>
+        <div class="footer-links">
+          <a href="/">Home</a>
+          <a href="/#overview">Overview</a>
+          <a href="/#rules">Rules</a>
+          <a href="/#parameters">Parameters</a>
+          <a href="/#backtesting">Backtesting</a>
+          <a href="/prop-firm">Prop Firm</a>
+          <a href="/code">Code</a>
+        </div>
+        <div class="footer-disclaimer">
+          <p><strong>Disclaimer:</strong> This is an educational and informational resource. Trading forex carries significant risk. Past performance and simulated data do not guarantee future results. Always test strategies thoroughly before using with real capital.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 FX_MOZO. All rights reserved. Built with Pine Script v6.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // ═══════════════════════════════════════════════════════════
+    // Google Sheets Live Data Configuration
+    // ═══════════════════════════════════════════════════════════
+
+    const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbx_VxRMQdjOwrCE5cfxu1je7nU41VIhCYmMLbnJTFhDbT-tVdskHt80zRtvdh4_2tEN/exec';
+
+    // ═══════════════════════════════════════════════════════════
+    // Default Fallback Data (used when sheet is unavailable)
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULTS = {
+      classicPrices: { 2000: 15, 5000: 38, 10000: 78, 25000: 198, 50000: 298, 100000: 498, 200000: 798 },
+      pfpAccessFees: { 5000: 19, 10000: 39, 25000: 99, 50000: 149, 100000: 249, 200000: 399 },
+      pfpDeductions: { 5000: 49, 10000: 99, 25000: 249, 50000: 499, 100000: 999, 200000: 1999 },
+      pfpRiskData: {
+        low:      { label: 'Low Risk',       dailyLoss: '2%',   maxLoss: '1%',   drawdown: '5%',  leverage: '1:200', stopLoss: 'Opening & Closing', fee: 'Pay 100% from first payout' },
+        moderate: { label: 'Moderate Risk',  dailyLoss: '3%',   maxLoss: '1.5%', drawdown: '6%',  leverage: '1:100', stopLoss: 'Closing only',        fee: 'Pay 100% from first payout' },
+        medium:   { label: 'Medium Risk',    dailyLoss: '4%',   maxLoss: '2%',   drawdown: '7%',  leverage: '1:50',  stopLoss: 'Not required',        fee: 'Pay 50% from first payout' },
+        high:     { label: 'High Risk',      dailyLoss: '5%',   maxLoss: '3%',   drawdown: '10%', leverage: '1:30',  stopLoss: 'Not required',        fee: 'Standard fee from first payout' }
+      },
+      pfpStepData: {
+        '1step': { label: '1-Step', target1: '10%', target1Label: 'Profit Target',              target2: '—', minDays: '3 days' },
+        '2step': { label: '2-Step', target1: '8%',  target1Label: 'Profit Target — Phase 1',     target2: '6%', minDays: '3 days per phase' }
+      },
+      instantLevels: {
+        1:  { balance: 10000,  upgrade: 400,   nextLabel: 'Upgrade to Level 2' },
+        2:  { balance: 20000,  upgrade: 800,   nextLabel: 'Upgrade to Level 3' },
+        3:  { balance: 40000,  upgrade: 1600,  nextLabel: 'Upgrade to Level 4' },
+        4:  { balance: 80000,  upgrade: 3200,  nextLabel: 'Upgrade to Level 5' },
+        5:  { balance: 160000, upgrade: 4800,  nextLabel: 'Upgrade to Level 6' },
+        6:  { balance: 240000, upgrade: 7200,  nextLabel: 'Upgrade to Level 7' },
+        7:  { balance: 360000, upgrade: 9600,  nextLabel: 'Upgrade to Level 8' },
+        8:  { balance: 480000, upgrade: 12800, nextLabel: 'Upgrade to Level 9' },
+        9:  { balance: 640000, upgrade: 20000, nextLabel: 'Upgrade to Level 10' },
+        10: { balance: 1000000, upgrade: 0,    nextLabel: 'Max Level Reached' }
+      },
+      classicDetails: [
+        { label: 'Profit Target — Phase 1', value: '8%' },
+        { label: 'Profit Target — Phase 2', value: '6%' },
+        { label: 'Funded Target', value: 'No monthly target' },
+        { label: 'Daily Loss Limit', value: '3% – 5% (Tier dependent)' },
+        { label: 'Max Loss Per Trade', value: '3%' },
+        { label: 'Overall Drawdown', value: '10% (Static)' },
+        { label: 'Trading Duration', value: 'Unlimited' },
+        { label: 'Minimum Trading Days', value: 'None' },
+        { label: 'Consistency Rule', value: 'No' },
+        { label: 'Profit Split — NewBee', value: '70%' },
+        { label: 'Profit Split — WorkerBee', value: '80%' },
+        { label: 'Profit Split — QueenBee', value: '90% – 99%' },
+        { label: 'Leverage — NewBee', value: '1:50 (Dynamic)' },
+        { label: 'Leverage — WorkerBee', value: '1:100 (Dynamic)' },
+        { label: 'Leverage — QueenBee', value: '1:200 (Dynamic)' },
+        { label: 'News Trading', value: 'Allowed' },
+        { label: 'EA / Bots', value: 'Yes (no HFT)' },
+        { label: 'Swap-Free', value: '100%' },
+        { label: 'Stop Loss', value: 'Required' },
+        { label: 'Platform', value: 'cTrader' },
+        { label: 'Payout Method', value: 'USDC via smart contract' }
+      ],
+      instantDetails: [
+        { label: 'Starting Balance', value: '$10,000 (Level 1)' },
+        { label: 'Max Account', value: '$1,000,000 (Level 10)' },
+        { label: 'Profit Target Per Level', value: '6%' },
+        { label: 'Upgrade Fee', value: '2% of new balance' },
+        { label: 'Daily Loss Limit', value: 'None' },
+        { label: 'Max Loss Per Trade', value: '2%' },
+        { label: 'Overall Drawdown', value: '6% (Static)' },
+        { label: 'Profit Split', value: '80% Fixed' },
+        { label: 'Daily Withdrawal Cap', value: '$2,000' },
+        { label: 'Level 1 Execution', value: 'B-Book' },
+        { label: 'Levels 2+ Execution', value: 'A-Book (AADS)' },
+        { label: 'News Trading', value: 'Allowed' },
+        { label: 'EA / Bots', value: 'Yes (no HFT)' },
+        { label: 'Swap-Free', value: '100%' },
+        { label: 'Stop Loss', value: 'Required' },
+        { label: 'Platform', value: 'cTrader' },
+        { label: 'Payout Method', value: 'USDC via smart contract' }
+      ],
+      pfpStaticDetails: [
+        { label: 'Funded Split', value: '80% Fixed' },
+        { label: 'Trading Duration', value: 'Unlimited' },
+        { label: 'Consistency Rule', value: 'No' },
+        { label: 'News Trading', value: 'Allowed' },
+        { label: 'EA / Bots', value: 'Yes (no HFT)' },
+        { label: 'Swap-Free', value: '100%' },
+        { label: 'Platform', value: 'cTrader' },
+        { label: 'Payout Method', value: 'USDC via smart contract' }
+      ],
+      coupons: [
+        { code: 'MOZO10', reward: '10% OFF' },
+        { code: 'MOZO20', reward: '20% OFF' }
+      ],
+      prohibited: [
+        '❌ High-Frequency Trading (HFT) bots',
+        '❌ Arbitrage strategies',
+        '❌ Reverse trading',
+        '❌ Copy trading',
+        '❌ Hedging across accounts',
+        '❌ Exploiting technical glitches'
+      ]
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // App Data Store (populated from sheet or defaults)
+    // ═══════════════════════════════════════════════════════════
+
+    var appData = {};
+
+    function mergeWithDefaults(sheetData) {
+      var data = {};
+
+      // Classic Prices: account_size → price
+      data.classicPrices = {};
+      if (sheetData.classicPrices && sheetData.classicPrices.length) {
+        sheetData.classicPrices.forEach(function (row) {
+          data.classicPrices[String(row.account_size)] = Number(row.price) || 0;
+        });
+      }
+      if (Object.keys(data.classicPrices).length === 0) {
+        data.classicPrices = DEFAULTS.classicPrices;
+      }
+
+      // PFP Fees: account_size → access_fee & deduction
+      data.pfpAccessFees = {};
+      data.pfpDeductions = {};
+      if (sheetData.pfpFees && sheetData.pfpFees.length) {
+        sheetData.pfpFees.forEach(function (row) {
+          var size = String(row.account_size);
+          data.pfpAccessFees[size] = Number(row.access_fee) || 0;
+          data.pfpDeductions[size] = Number(row.deduction) || 0;
+        });
+      }
+      if (Object.keys(data.pfpAccessFees).length === 0) {
+        data.pfpAccessFees = DEFAULTS.pfpAccessFees;
+        data.pfpDeductions = DEFAULTS.pfpDeductions;
+      }
+
+      // PFP Risk Data
+      data.pfpRiskData = {};
+      if (sheetData.pfpRiskData && sheetData.pfpRiskData.length) {
+        sheetData.pfpRiskData.forEach(function (row) {
+          data.pfpRiskData[row.risk_key] = {
+            label: row.label,
+            dailyLoss: row.daily_loss,
+            maxLoss: row.max_loss,
+            drawdown: row.drawdown,
+            leverage: row.leverage,
+            stopLoss: row.stop_loss,
+            fee: row.fee
+          };
+        });
+      }
+      if (Object.keys(data.pfpRiskData).length === 0) {
+        data.pfpRiskData = DEFAULTS.pfpRiskData;
+      }
+
+      // PFP Step Data
+      data.pfpStepData = {};
+      if (sheetData.pfpStepData && sheetData.pfpStepData.length) {
+        sheetData.pfpStepData.forEach(function (row) {
+          data.pfpStepData[row.step_key] = {
+            label: row.step_label,
+            target1: row.target1,
+            target1Label: row.target1_label,
+            target2: row.target2,
+            minDays: row.min_days
+          };
+        });
+      }
+      if (Object.keys(data.pfpStepData).length === 0) {
+        data.pfpStepData = DEFAULTS.pfpStepData;
+      }
+
+      // Instant Levels
+      data.instantLevels = {};
+      if (sheetData.instantLevels && sheetData.instantLevels.length) {
+        sheetData.instantLevels.forEach(function (row) {
+          data.instantLevels[String(row.level)] = {
+            balance: Number(row.balance) || 0,
+            upgrade: Number(row.upgrade_fee) || 0,
+            nextLabel: row.next_label
+          };
+        });
+      }
+      if (Object.keys(data.instantLevels).length === 0) {
+        data.instantLevels = DEFAULTS.instantLevels;
+      }
+
+      // Detail arrays (use sheet data if available, else defaults)
+      data.classicDetails = (sheetData.classicDetails && sheetData.classicDetails.length)
+        ? sheetData.classicDetails : DEFAULTS.classicDetails;
+      data.instantDetails = (sheetData.instantDetails && sheetData.instantDetails.length)
+        ? sheetData.instantDetails : DEFAULTS.instantDetails;
+      data.coupons = (sheetData.coupons && sheetData.coupons.length)
+        ? sheetData.coupons : DEFAULTS.coupons;
+      data.prohibited = (sheetData.prohibited && sheetData.prohibited.length)
+        ? sheetData.prohibited : DEFAULTS.prohibited;
+
+      // PFP static details
+      data.pfpStaticDetails = (sheetData.pfpDetails && sheetData.pfpDetails.length)
+        ? sheetData.pfpDetails : DEFAULTS.pfpStaticDetails;
+
+      return data;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Fetch from Google Sheets API
+    // ═══════════════════════════════════════════════════════════
+
+    async function loadSheetData() {
+      try {
+        var res = await fetch(SHEETS_API_URL);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var raw = await res.json();
+        if (raw.error) throw new Error(raw.error);
+        appData = mergeWithDefaults(raw);
+        console.log('✅ Prop firm data loaded from Google Sheets');
+      } catch (e) {
+        console.warn('⚠️ Could not load from Google Sheets, using defaults:', e.message);
+        appData = mergeWithDefaults({});
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Populate Dynamic Elements
+    // ═══════════════════════════════════════════════════════════
+
+    function populateTable(tbodyId, rows) {
+      var tbody = document.getElementById(tbodyId);
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      rows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        var labelCell = document.createElement('td');
+        labelCell.className = 'pf-dt-label';
+        var valueCell = document.createElement('td');
+        valueCell.className = 'pf-dt-value';
+        if (row.label !== undefined) {
+          labelCell.textContent = row.label;
+          valueCell.textContent = row.value !== undefined ? row.value : '';
+        }
+        tr.appendChild(labelCell);
+        tr.appendChild(valueCell);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update PFP static detail rows by matching label text,
+    // preserving dynamic rows with JS-managed IDs.
+    function updatePfpStaticDetails(details) {
+      var tbody = document.getElementById('pfpDetailsBody');
+      if (!tbody) return;
+      var rows = tbody.querySelectorAll('tr');
+      details.forEach(function (detail) {
+        var label = detail.label;
+        var value = detail.value;
+        for (var i = 0; i < rows.length; i++) {
+          var labelCell = rows[i].querySelector('.pf-dt-label');
+          if (labelCell && labelCell.textContent.trim() === label) {
+            var valueCell = rows[i].querySelector('.pf-dt-value');
+            if (valueCell) {
+              valueCell.textContent = value;
+            }
+            break;
+          }
+        }
+      });
+    }
+
+    function populateCoupons(coupons) {
+      var lists = document.querySelectorAll('.pf-coupon-list');
+      if (!lists.length) return;
+      lists.forEach(function (list) {
+        list.innerHTML = '';
+        coupons.forEach(function (c) {
+          var code = c.code || '';
+          var reward = c.reward || '';
+          var item = document.createElement('div');
+          item.className = 'pf-coupon-item';
+          item.innerHTML = '<div class="pf-coupon-code">' + esc(code) + '</div>'
+            + '<div class="pf-coupon-reward">' + esc(reward) + '</div>';
+          list.appendChild(item);
+        });
+      });
+    }
+
+    function populateProhibited(items) {
+      var grids = document.querySelectorAll('.pf-prohibited-grid');
+      if (!grids.length) return;
+      grids.forEach(function (grid) {
+        grid.innerHTML = '';
+        items.forEach(function (item) {
+          var text = typeof item === 'string' ? item : (item.item || item.label || '');
+          var div = document.createElement('div');
+          div.className = 'pf-prohibited-item';
+          div.textContent = text;
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    function esc(str) {
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(str));
+      return d.innerHTML;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // UI Initialization
+    // ═══════════════════════════════════════════════════════════
+
+    function initUI() {
+
+      // ── Populate dynamic tables ─────────────────────────────
+      populateTable('classicDetailsBody', appData.classicDetails);
+      populateTable('instantDetailsBody', appData.instantDetails);
+      updatePfpStaticDetails(appData.pfpStaticDetails);
+
+      // ── Coupons ─────────────────────────────────────────────
+      populateCoupons(appData.coupons);
+
+      // ── Prohibited ──────────────────────────────────────────
+      populateProhibited(appData.prohibited);
+
+      // ── Price Data — 2-Step Classic ─────────────────────────
+      var classicSelect = document.getElementById('classicSize');
+      var classicPrice = document.getElementById('classicPrice');
+
+      if (classicSelect && classicPrice) {
+        function updateClassicPrice() {
+          var val = classicSelect.value;
+          var price = appData.classicPrices[val] || 0;
+          classicPrice.textContent = '$' + price.toLocaleString();
+        }
+        classicSelect.addEventListener('change', updateClassicPrice);
+        updateClassicPrice();
+      }
+
+      // ── Price Data — Pay From Profits ───────────────────────
+      var pfpSize = document.getElementById('pfpSize');
+      var pfpStep = document.getElementById('pfpStep');
+      var pfpTotalFee = document.getElementById('pfpTotalFee');
+      var pfpDeduction = document.getElementById('pfpDeduction');
+      var pfpStepCounts = { '1step': 1, '2step': 2 };
+
+      function updatePfpPrices() {
+        if (!pfpSize || !pfpStep || !pfpTotalFee || !pfpDeduction) return;
+        var sizeVal = pfpSize.value;
+        var stepCount = pfpStepCounts[pfpStep.value] || 1;
+        var perStepFee = appData.pfpAccessFees[sizeVal] || 0;
+        pfpTotalFee.textContent = '$' + (perStepFee * stepCount).toLocaleString();
+        pfpDeduction.textContent = '$' + (appData.pfpDeductions[sizeVal] || 0).toLocaleString();
+      }
+
+      // ── Step Type — Pay From Profits ────────────────────────
+      var pfpStepLabel = document.getElementById('pfpStepLabel');
+      var pfpTarget1 = document.getElementById('pfpTarget1');
+      var pfpTarget1Label = document.getElementById('pfpTarget1Label');
+      var pfpTarget2Row = document.getElementById('pfpTarget2Row');
+      var pfpTarget2 = document.getElementById('pfpTarget2');
+      var pfpMinDays = document.getElementById('pfpMinDays');
+
+      function updatePfpStep() {
+        var key = pfpStep.value;
+        var data = appData.pfpStepData[key];
+        if (data) {
+          pfpStepLabel.textContent = data.label;
+          pfpTarget1.textContent = data.target1;
+          pfpTarget1Label.textContent = data.target1Label;
+          pfpTarget2.textContent = data.target2;
+          pfpTarget2Row.style.display = key === '1step' ? 'none' : '';
+          pfpMinDays.textContent = data.minDays;
+        }
+        updatePfpPrices();
+      }
+
+      if (pfpSize && pfpStep && pfpTotalFee && pfpDeduction) {
+        pfpSize.addEventListener('change', updatePfpPrices);
+        pfpStep.addEventListener('change', updatePfpStep);
+        updatePfpPrices();
+        updatePfpStep();
+      }
+
+      // ── Risk Categories — Pay From Profits ──────────────────
+      var pfpRisk = document.getElementById('pfpRisk');
+      var pfpRiskLabel = document.getElementById('pfpRiskLabel');
+      var pfpDailyLoss = document.getElementById('pfpDailyLoss');
+      var pfpMaxLoss = document.getElementById('pfpMaxLoss');
+      var pfpDrawdown = document.getElementById('pfpDrawdown');
+      var pfpLeverage = document.getElementById('pfpLeverage');
+      var pfpStopLoss = document.getElementById('pfpStopLoss');
+      var pfpFee = document.getElementById('pfpFee');
+
+      function updatePfpRisk() {
+        var key = pfpRisk.value;
+        var data = appData.pfpRiskData[key];
+        if (data) {
+          pfpRiskLabel.textContent = data.label;
+          pfpDailyLoss.textContent = data.dailyLoss;
+          pfpMaxLoss.textContent = data.maxLoss;
+          pfpDrawdown.textContent = data.drawdown;
+          pfpLeverage.textContent = data.leverage;
+          pfpStopLoss.textContent = data.stopLoss;
+          pfpFee.textContent = data.fee;
+        }
+      }
+
+      if (pfpRisk && pfpRiskLabel) {
+        pfpRisk.addEventListener('change', updatePfpRisk);
+        updatePfpRisk();
+      }
+
+      // ── Price Data — Instant Growth (Golden Tower) ──────────
+      var instantLevel = document.getElementById('instantLevel');
+      var instantLevelLabel = document.getElementById('instantLevelLabel');
+      var instantUpgradeFee = document.getElementById('instantUpgradeFee');
+      var instantNewBalance = document.getElementById('instantNewBalance');
+
+      if (instantLevel && instantLevelLabel && instantUpgradeFee && instantNewBalance) {
+        function updateInstant() {
+          var val = instantLevel.value;
+          var data = appData.instantLevels[val];
+          if (data) {
+            instantLevelLabel.textContent = data.nextLabel;
+            instantUpgradeFee.textContent = data.upgrade === 0 ? '—' : '$' + data.upgrade.toLocaleString();
+            instantNewBalance.textContent = '$' + data.balance.toLocaleString();
+          }
+        }
+        instantLevel.addEventListener('change', updateInstant);
+        updateInstant();
+      }
+
+      // ── Tab Switching ────────────────────────────────────
+      var tabs = document.querySelectorAll('.pf-tab');
+      var panels = {
+        classic: document.getElementById('pfpanel-classic'),
+        pfp: document.getElementById('pfpanel-pfp'),
+        instant: document.getElementById('pfpanel-instant')
+      };
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          tabs.forEach(function (t) { t.classList.remove('active'); });
+          this.classList.add('active');
+          Object.keys(panels).forEach(function (key) {
+            panels[key].classList.remove('active');
+          });
+          var target = this.getAttribute('data-pftab');
+          if (panels[target]) panels[target].classList.add('active');
+        });
+      });
+
+      // ── Side Drawer ──────────────────────────────────────
+      var menuBtn = document.getElementById('menuBtnPF');
+      var drawer = document.getElementById('sideDrawer');
+      var drawerOverlay = document.getElementById('drawerOverlay');
+      var drawerClose = document.querySelector('.drawer-close');
+
+      function openDrawer() {
+        drawer.classList.add('open');
+        drawerOverlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeDrawer() {
+        drawer.classList.remove('open');
+        drawerOverlay.classList.remove('visible');
+        document.body.style.overflow = '';
+      }
+
+      if (menuBtn) menuBtn.addEventListener('click', openDrawer);
+      if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+      if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+      });
+
+      document.querySelectorAll('.drawer-link').forEach(function (link) {
+        link.addEventListener('click', closeDrawer);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Initialize on DOM Ready
+    // ═══════════════════════════════════════════════════════════
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      await loadSheetData();
+      initUI();
+    });
+  </script>
+</body>
+</html>

@@ -115,11 +115,16 @@
   <section class="pf-section">
     <div class="container">
 
+      <!-- Loading Indicator -->
+      <div class="pf-loading" id="pfLoading">
+        <div class="pf-loading-spinner"></div>
+        <span>Loading data…</span>
+      </div>
+
       <!-- === 2-STEP CLASSIC === -->
       <div class="pf-panel active" id="pfpanel-classic">
 
-        <!-- Account Size Selector -->
-        <div class="pf-select-section">
+        <!-- Account Size Selector -->          <div class="pf-select-section">
           <label class="pf-select-label" for="classicSize">Select Account Size</label>
           <div class="pf-select-wrapper">
             <select id="classicSize" class="pf-select">
@@ -703,6 +708,20 @@
     }
 
     // ═══════════════════════════════════════════════════════════
+    // Loading Indicator
+    // ═══════════════════════════════════════════════════════════
+
+    var pfLoading = document.getElementById('pfLoading');
+
+    function showLoading() {
+      if (pfLoading) pfLoading.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      if (pfLoading) pfLoading.classList.add('hidden');
+    }
+
+    // ═══════════════════════════════════════════════════════════
     // Fetch from Google Sheets API
     // ═══════════════════════════════════════════════════════════
 
@@ -993,6 +1012,7 @@
       await fetchConfig();
       await loadSheetData();
       initUI();
+      hideLoading();
     });
   </script>
 </body>

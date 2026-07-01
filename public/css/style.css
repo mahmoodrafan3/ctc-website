@@ -2343,6 +2343,47 @@ code {
 }
 
 /* ============================================================
+   PROP FIRM — LOADING INDICATOR
+   ============================================================ */
+.pf-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  width: fit-content;
+  margin: 0 auto 24px;
+  transition: opacity 0.3s ease;
+}
+
+.pf-loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pf-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--gray-200);
+  border-top-color: var(--gray-700);
+  border-radius: 50%;
+  animation: pfSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pfSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
    PROP FIRM — RESPONSIVE
    ============================================================ */
 @media (max-width: 1024px) {    .pf-prohibited-grid {

@@ -25,6 +25,11 @@ app.get('/prop-firm', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'prop-firm.html'));
 });
 
+// Route for /trading-journal - serve trading-journal.html
+app.get('/trading-journal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'trading-journal.html'));
+});
+
 // All other routes go to index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

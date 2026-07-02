@@ -1618,6 +1618,79 @@ code {
 }
 
 /* ============================================================
+   BACKTESTING — PERSONAL RESULTS
+   ============================================================ */
+.bt-personal {
+  max-width: 640px;
+  margin: 48px auto 0;
+  text-align: center;
+}
+
+.bt-personal-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.bt-personal-divider::before,
+.bt-personal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+.bt-personal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.bt-personal-text {
+  font-size: 0.92rem;
+  color: var(--gray-400);
+  line-height: 1.8;
+}
+
+.btn-personal {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background: rgba(255,255,255,0.04);
+  color: var(--gray-200);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-personal:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.25);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+.btn-personal svg:last-child {
+  transition: transform 0.2s ease;
+}
+
+.btn-personal:hover svg:last-child {
+  transform: translate(2px, -2px);
+}
+
+/* ============================================================
    FOOTER
    ============================================================ */
 .footer {
@@ -2343,38 +2416,47 @@ code {
 }
 
 /* ============================================================
-   PROP FIRM — LOADING INDICATOR
+   PROP FIRM — FULL-PAGE LOADING OVERLAY
    ============================================================ */
 .pf-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 10px 20px;
-  background: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--gray-500);
-  width: fit-content;
-  margin: 0 auto 24px;
-  transition: opacity 0.3s ease;
+  background: transparent;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
 .pf-loading.hidden {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
+.pf-loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
 .pf-loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--gray-200);
-  border-top-color: var(--gray-700);
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--gray-900);
   border-radius: 50%;
-  animation: pfSpin 0.7s linear infinite;
+  animation: pfSpin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   flex-shrink: 0;
+}
+
+.pf-loading-inner span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  letter-spacing: 0.03em;
 }
 
 @keyframes pfSpin {
@@ -2856,6 +2938,103 @@ code {
     bottom: 20px;
     font-size: 0.75rem;
     padding: 6px 14px;
+  }
+}
+
+/* ============================================================
+   TRADING JOURNAL — COMING SOON
+   ============================================================ */
+.tj-coming-soon {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 60px 0;
+}
+
+.tj-coming-soon-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 50%;
+  color: var(--gray-500);
+  margin-bottom: 32px;
+  transition: all 0.3s ease;
+}
+
+.tj-coming-soon:hover .tj-coming-soon-icon {
+  background: var(--gray-900);
+  border-color: var(--gray-900);
+  color: var(--white);
+  transform: scale(1.05);
+}
+
+.tj-coming-soon-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.tj-coming-soon-desc {
+  font-size: 1.05rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+.tj-features-preview {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.tj-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  transition: all 0.2s ease;
+}
+
+.tj-feature-item svg {
+  flex-shrink: 0;
+  color: var(--gray-400);
+  transition: color 0.2s ease;
+}
+
+.tj-feature-item:hover {
+  border-color: var(--gray-400);
+  background: var(--gray-50);
+  transform: translateY(-2px);
+}
+
+.tj-feature-item:hover svg {
+  color: var(--gray-700);
+}
+
+@media (max-width: 768px) {
+  .tj-coming-soon-title {
+    font-size: 1.5rem;
+  }
+
+  .tj-features-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .tj-coming-soon {
+    padding: 40px 0;
   }
 }
 

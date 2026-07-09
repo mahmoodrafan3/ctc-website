@@ -929,9 +929,30 @@
           var item = document.createElement('div');
           item.className = 'pf-coupon-item';
           item.innerHTML = '<div class="pf-coupon-code">' + esc(code) + '</div>'
-            + '<div class="pf-coupon-reward">' + esc(reward) + '</div>';
+            + '<div class="pf-coupon-reward">' + esc(reward) + '</div>'
+            + '<span class="pf-coupon-price"></span>';
           list.appendChild(item);
         });
+      });
+    }
+
+    // Update coupon discount prices based on the currently displayed price
+    function updateCouponDiscounts(panelId, basePrice) {
+      var panel = document.getElementById(panelId);
+      if (!panel) return;
+      var items = panel.querySelectorAll('.pf-coupon-item');
+      items.forEach(function (item) {
+        var rewardEl = item.querySelector('.pf-coupon-reward');
+        var priceSpan = item.querySelector('.pf-coupon-price');
+        if (!rewardEl || !priceSpan) return;
+        var match = rewardEl.textContent.match(/(\d+)%/);
+        if (match && basePrice > 0) {
+          var pct = parseInt(match[1], 10);
+          var discounted = Math.round(basePrice * (100 - pct) / 100);
+          priceSpan.textContent = '$' + discounted.toLocaleString();
+        } else {
+          priceSpan.textContent = '';
+        }
       });
     }
 
@@ -1072,6 +1093,7 @@
           } else {
             classicPrice.textContent = '—';
           }
+          updateCouponDiscounts('pfpanel-classic', basePrice);
         }
         classicSelect.addEventListener('change', updateClassicPrice);
         classicBee.addEventListener('change', updateClassicPrice);
@@ -1093,6 +1115,8 @@
         } else {
           pfpTotalFee.textContent = '—';
         }
+        // Update coupon discounts based on access fee
+        updateCouponDiscounts('pfpanel-pfp', Number(accessFees[sizeVal]) || 0);
 
         // After Evaluation Funded Fee = fundedFeePct% of capital
         var fundedFeePct = Number(riskData.fundedFeePct);
@@ -1166,11 +1190,13 @@
             instantUpgradeFee.textContent = data.upgrade === 0 ? '—' : '$' + Number(data.upgrade).toLocaleString();
             instantNewBalance.textContent = '$' + Number(data.balance).toLocaleString();
             instantBuyPrice.textContent = data.buyPrice > 0 ? '$' + Number(data.buyPrice).toLocaleString() : '—';
+            updateCouponDiscounts('pfpanel-instant', Number(data.buyPrice) || 0);
           } else {
             instantLevelLabel.textContent = '—';
             instantUpgradeFee.textContent = '—';
             instantNewBalance.textContent = '—';
             instantBuyPrice.textContent = '—';
+            updateCouponDiscounts('pfpanel-instant', 0);
           }
         }
         instantLevel.addEventListener('change', updateInstant);
@@ -1195,6 +1221,14 @@
           });
           var target = this.getAttribute('data-pftab');
           if (panels[target]) panels[target].classList.add('active');
+          // Update coupon discounts for the newly active panel
+          if (target === 'classic') {
+            updateCouponDiscounts('pfpanel-classic', parseFloat((classicPrice.textContent || '').replace(/[^0-9.]/g,'')) || 0);
+          } else if (target === 'pfp') {
+            updateCouponDiscounts('pfpanel-pfp', parseFloat((pfpTotalFee.textContent || '').replace(/[^0-9.]/g,'')) || 0);
+          } else if (target === 'instant') {
+            updateCouponDiscounts('pfpanel-instant', parseFloat((instantBuyPrice.textContent || '').replace(/[^0-9.]/g,'')) || 0);
+          }
         });
       });
 

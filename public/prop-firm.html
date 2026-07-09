@@ -747,23 +747,6 @@
     // Load data — localStorage cache, then MongoDB API
     // ═══════════════════════════════════════════════════════════
 
-    function loadFromCache() {
-      try {
-        var cached = localStorage.getItem('pfDataCache');
-        if (!cached) return null;
-        localStorage.removeItem('pfDataCache');
-        var parsed = JSON.parse(cached);
-        if (parsed && parsed.data && parsed.timestamp) {
-          var age = Date.now() - parsed.timestamp;
-          // Use cache if less than 10 minutes old
-          if (age < 10 * 60 * 1000) {
-            return parsed.data;
-          }
-        }
-      } catch (e) {}
-      return null;
-    }
-
     // ═══════════════════════════════════════════════════════════
     // Inline seed data — used when MongoDB is unavailable
     // ═══════════════════════════════════════════════════════════
@@ -878,15 +861,7 @@
     };
 
     async function loadPropFirmData() {
-      // Check localStorage cache first (prefetched from homepage)
-      var cachedData = loadFromCache();
-      if (cachedData) {
-        // Merge cached data over defaults so missing fields (e.g. classicBeePrices) fall back gracefully
-        appData = Object.assign({}, DEFAULT_SEED, cachedData);
-        return;
-      }
-
-      // Fetch from our own MongoDB-backed API
+      // Always fetch fresh data from the API — no localStorage cache to avoid stale data
       try {
         var res = await fetch('/api/prop-firm-data');
         if (!res.ok) throw new Error('HTTP ' + res.status);

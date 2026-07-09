@@ -371,6 +371,8 @@
           body: JSON.stringify(appData)
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        // Clear any stale localStorage cache so the prop-firm page fetches fresh data
+        try { localStorage.removeItem('pfDataCache'); } catch (e) {}
         showStatus('Data saved successfully!', 'success');
         document.getElementById('lastSaved').textContent = 'Saved: ' + new Date().toLocaleTimeString();
       } catch (e) {

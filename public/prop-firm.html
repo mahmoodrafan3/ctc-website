@@ -219,11 +219,6 @@
                   <div class="pf-coupon-code">MOZO20</div>
                   <div class="pf-coupon-reward">20% OFF</div>
                 </div>
-                <div class="pf-coupon-item" id="classicWelcomeItem">
-                  <div class="pf-coupon-code">WELCOME25</div>
-                  <div class="pf-coupon-reward">25% OFF</div>
-                  <span class="pf-coupon-price" id="classicWelcomePrice"></span>
-                </div>
               </div>
             </div>
 
@@ -871,7 +866,6 @@
       coupons: [
         { code: 'MOZO10', reward: '10% OFF' },
         { code: 'MOZO20', reward: '20% OFF' },
-        { code: 'WELCOME25', reward: '25% OFF' }
       ],
       prohibited: [
         '❌ High-Frequency Trading (HFT) bots',
@@ -1090,8 +1084,6 @@
       // ── Price Data — 2-Step Classic ─────────────────────────
       var classicBee = document.getElementById('classicBee');
 
-      var classicWelcomePrice = document.getElementById('classicWelcomePrice');
-
       if (classicSelect && classicPrice && classicBee) {
         function updateClassicPrice() {
           var sizeVal = classicSelect.value;
@@ -1104,17 +1096,6 @@
             classicPrice.textContent = '$' + basePrice.toLocaleString();
           } else {
             classicPrice.textContent = '—';
-          }
-          // Update WELCOME25 discount price (25% off)
-          if (basePrice > 0) {
-            var discPrice = Math.round(basePrice * 75 / 100);
-            if (classicWelcomePrice) {
-              classicWelcomePrice.textContent = '$' + discPrice.toLocaleString();
-            }
-          } else {
-            if (classicWelcomePrice) {
-              classicWelcomePrice.textContent = '';
-            }
           }
         }
         classicSelect.addEventListener('change', updateClassicPrice);

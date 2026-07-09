@@ -1,19 +1,105 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const { connect, getDb } = require('./lib/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the 'public' directory with cache control
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: function (res, path) {
+    // HTML files: no cache (so admin.html and prop-firm.html updates are picked up immediately)
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
-// API endpoint to securely provide config from environment variables
-app.get('/api/config', (req, res) => {
-  res.json({
-    sheetsApiUrl: process.env.SHEETS_API_URL || ''
-  });
+// Connect to MongoDB on startup
+connect();
+
+// ── Admin auth helpers ────────────────────────────────────────────
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+
+function requireAdmin(req, res, next) {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace('Bearer ', '');
+  if (token !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+// ── Public API: Serve prop firm data from MongoDB ─────────────────
+app.get('/api/prop-firm-data', async (req, res) => {
+  try {
+    const db = getDb();
+    if (!db) {
+      return res.status(503).json({ error: 'Database not available' });
+    }
+    const doc = await db.collection('propFirmData').findOne({ _key: 'v1' });
+    if (!doc || !doc.data) {
+      return res.status(404).json({ error: 'No data found' });
+    }
+    res.json(doc.data);
+  } catch (err) {
+    console.error('❌ Error fetching prop firm data:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
+
+// ── Admin routes ──────────────────────────────────────────────────
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.post('/api/admin/login', express.json(), (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    res.json({ token: password });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
+app.get('/api/admin/prop-firm-data', requireAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    if (!db) return res.status(503).json({ error: 'Database not available' });
+    const doc = await db.collection('propFirmData').findOne({ _key: 'v1' });
+    if (!doc || !doc.data) return res.status(404).json({ error: 'No data found' });
+    res.json(doc.data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/prop-firm-data', requireAdmin, express.json(), async (req, res) => {
+  try {
+    const db = getDb();
+    if (!db) return res.status(503).json({ error: 'Database not available' });
+    const data = req.body;
+
+    // Load existing document and deep-merge so missing client fields are preserved
+    const existing = await db.collection('propFirmData').findOne({ _key: 'v1' });
+    const mergedData = existing && existing.data
+      ? Object.assign({}, existing.data, data)
+      : data;
+
+    await db.collection('propFirmData').replaceOne(
+      { _key: 'v1' },
+      { _key: 'v1', updatedAt: new Date(), data: mergedData },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // Route for /code - serve code.html
 app.get('/code', (req, res) => {

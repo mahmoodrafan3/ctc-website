@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — CTC Strategy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0a; --surface: #171717; --border: #262626;
+      --text: #e5e5e5; --text-dim: #737373; --text-muted: #525252;
+      --accent: #3b82f6; --accent-hover: #2563eb;
+      --green: #22c55e; --red: #ef4444; --amber: #eab308;
+      --radius: 6px; --font: 'Inter', sans-serif; --mono: 'JetBrains Mono', monospace;
+    }
+    body {
+      font-family: var(--font); background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Login Screen ──────────────────────────────── */
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+    .login-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 40px; width: 100%; max-width: 400px;
+    }
+    .login-box h1 {
+      font-size: 1.5rem; font-weight: 800; margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+    .login-box p {
+      color: var(--text-dim); font-size: 0.9rem; margin-bottom: 24px;
+    }
+    .login-box label {
+      display: block; font-size: 0.75rem; font-weight: 600;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 6px;
+    }
+    .login-box input {
+      width: 100%; padding: 12px 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text); font-size: 1rem; font-family: var(--font);
+      outline: none; transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--accent); }
+    .login-box .login-error {
+      color: var(--red); font-size: 0.85rem; margin-top: 10px;
+      display: none;
+    }
+    .login-box .login-error.visible { display: block; }
+
+    /* ── Dashboard ─────────────────────────────────── */
+    #dashboard { display: none; }
+    #dashboard.visible { display: block; }
+
+    .admin-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 16px 24px; position: sticky; top: 0; z-index: 100;
+    }
+    .admin-header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .admin-header h1 {
+      font-size: 1.15rem; font-weight: 700;
+    }
+    .admin-header h1 span { color: var(--text-dim); font-weight: 500; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .header-actions .last-saved {
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+
+    .admin-body {
+      max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; border-radius: var(--radius);
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      border: 1px solid transparent; transition: all 0.2s;
+      font-family: var(--font); text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-outline {
+      background: transparent; color: var(--text); border-color: var(--border);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+    .btn-success {
+      background: var(--green); color: #000; border-color: var(--green);
+    }
+    .btn-success:hover { filter: brightness(1.1); }
+    .btn-danger {
+      background: transparent; color: var(--red); border-color: var(--red);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.1); }
+
+    /* ── Section Cards ─────────────────────────────── */
+    .section-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 24px; overflow: hidden;
+    }
+    .section-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+    }
+    .section-card-header h2 {
+      font-size: 0.95rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-card-header h2 .badge {
+      font-size: 0.65rem; font-weight: 600; padding: 2px 8px;
+      border-radius: 10px; background: rgba(59,130,246,0.15);
+      color: var(--accent);
+    }
+    .section-card-header .toggle-icon {
+      color: var(--text-dim); transition: transform 0.2s; font-size: 0.8rem;
+    }
+    .section-card-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+    .section-card-body {
+      padding: 20px; display: block;
+    }
+    .section-card-header.collapsed + .section-card-body { display: none; }
+
+    /* ── Form Elements ─────────────────────────────── */
+    .form-grid {
+      display: grid; gap: 12px;
+    }
+    .form-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .form-grid.cols-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label {
+      font-size: 0.7rem; font-weight: 600; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 8px 10px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text); font-size: 0.85rem;
+      font-family: var(--font); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent);
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+
+    .data-table {
+      width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    }
+    .data-table th {
+      text-align: left; padding: 8px 10px; font-size: 0.7rem;
+      font-weight: 600; color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.05em; border-bottom: 1px solid var(--border);
+    }
+    .data-table td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .data-table td input, .data-table td select {
+      width: 100%; padding: 6px 8px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text); font-size: 0.82rem; font-family: var(--mono);
+      outline: none; transition: border-color 0.2s;
+    }
+    .data-table td input:focus { border-color: var(--accent); }
+    .data-table .row-actions { display: flex; gap: 4px; }
+    .data-table .row-actions button {
+      padding: 4px 8px; background: none; border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text-dim); cursor: pointer;
+      font-size: 0.75rem; transition: all 0.2s;
+    }
+    .data-table .row-actions button:hover { color: var(--red); border-color: var(--red); }
+    .data-table .row-actions .add-row-btn:hover { color: var(--green); border-color: var(--green); }
+    .add-row-bar {
+      padding: 10px; text-align: center; border-top: 1px solid var(--border);
+    }
+    .add-row-bar button {
+      padding: 6px 16px; background: none; border: 1px dashed var(--border);
+      border-radius: var(--radius); color: var(--text-dim); cursor: pointer;
+      font-size: 0.8rem; transition: all 0.2s; font-family: var(--font);
+    }
+    .add-row-bar button:hover { border-color: var(--accent); color: var(--accent); }
+
+    .object-editor { display: flex; flex-direction: column; gap: 12px; }
+    .object-row {
+      display: flex; gap: 8px; align-items: flex-end;
+      padding: 8px 12px; background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius);
+    }
+    .object-row .form-group { flex: 1; }
+    .object-row .remove-btn {
+      padding: 6px 10px; background: none; border: 1px solid transparent;
+      color: var(--red); cursor: pointer; font-size: 0.8rem;
+      border-radius: 4px; transition: all 0.2s; flex-shrink: 0;
+      margin-bottom: 0; align-self: center;
+    }
+    .object-row .remove-btn:hover { background: rgba(239,68,68,0.1); }
+
+    .status-msg {
+      position: fixed; top: 72px; right: 24px; z-index: 999;
+      padding: 12px 20px; border-radius: var(--radius);
+      font-size: 0.85rem; font-weight: 600; display: none;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .status-msg.success { display: block; background: var(--green); color: #000; }
+    .status-msg.error { display: block; background: var(--red); color: #fff; }
+
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .loading-overlay.visible { display: flex; }
+    .loading-spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .form-grid.cols-2, .form-grid.cols-3, .form-grid.cols-4, .form-grid.cols-5 {
+        grid-template-columns: 1fr;
+      }
+      .admin-body { padding: 16px 12px 60px; }
+      .section-card-body { padding: 12px; }
+      .admin-header { padding: 12px 16px; }
+      .admin-header h1 { font-size: 1rem; }
+      .data-table { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
+
+  <!-- Status Toast -->
+  <div class="status-msg" id="statusMsg"></div>
+
+  <!-- ═══ LOGIN SCREEN ═══ -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <h1>Admin Panel</h1>
+      <p>CTC Strategy — Prop Firm Data Editor</p>
+      <form id="loginForm" autocomplete="off">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter admin password" autofocus />
+        <div class="login-error" id="loginError">Incorrect password</div>
+        <br /><br />
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div id="dashboard">
+
+    <div class="admin-header">
+      <div class="admin-header-inner">
+        <h1>Admin <span>/ Prop Firm Data</span></h1>
+        <div class="header-actions">
+          <span class="last-saved" id="lastSaved"></span>
+          <button class="btn btn-outline" onclick="loadData()">Refresh</button>
+          <button class="btn btn-success" onclick="saveData()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-body" id="adminBody"></div>
+
+  </div>
+
+  <!-- ═══ SCRIPTS ═══ -->
+  <script>
+    // ── State ───────────────────────────────────────────
+    let AUTH_TOKEN = sessionStorage.getItem('adminToken') || '';
+    let appData = null;
+
+    // ── Login ───────────────────────────────────────────
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const pw = document.getElementById('password').value;
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        if (!res.ok) throw new Error('fail');
+        const data = await res.json();
+        AUTH_TOKEN = data.token;
+        sessionStorage.setItem('adminToken', AUTH_TOKEN);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').classList.add('visible');
+        loadData();
+      } catch (e) {
+        document.getElementById('loginError').classList.add('visible');
+        setTimeout(function () {
+          document.getElementById('loginError').classList.remove('visible');
+        }, 2500);
+      }
+    });
+
+    // Check for existing session
+    if (AUTH_TOKEN) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').classList.add('visible');
+      loadData();
+    }
+
+    // ── API Helpers ─────────────────────────────────────
+    function authHeaders() {
+      return { 'Authorization': 'Bearer ' + AUTH_TOKEN, 'Content-Type': 'application/json' };
+    }
+
+    function showLoading(v) {
+      document.getElementById('loadingOverlay').classList.toggle('visible', v);
+    }
+
+    function showStatus(msg, type) {
+      var el = document.getElementById('statusMsg');
+      el.textContent = msg;
+      el.className = 'status-msg ' + type;
+      setTimeout(function () { el.className = 'status-msg'; }, 3000);
+    }
+
+    async function loadData() {
+      showLoading(true);
+      try {
+        var res = await fetch('/api/admin/prop-firm-data', { headers: authHeaders() });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        appData = await res.json();
+        renderDashboard();
+        document.getElementById('lastSaved').textContent = 'Loaded';
+      } catch (e) {
+        showStatus('Failed to load data: ' + e.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function saveData() {
+      showLoading(true);
+      // Debug: log what we're about to send
+      var keys = appData ? Object.keys(appData) : [];
+      console.log('💾 Saving appData with ' + keys.length + ' keys:', keys.sort().join(', '));
+      keys.forEach(function (k) {
+        var v = appData[k];
+        if (Array.isArray(v)) console.log('  ' + k + ': array[' + v.length + ']');
+        else if (typeof v === 'object' && v !== null) console.log('  ' + k + ': object{' + Object.keys(v).length + '}');
+        else console.log('  ' + k + ': ' + v);
+      });
+      try {
+        var res = await fetch('/api/admin/prop-firm-data', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(appData)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        showStatus('Data saved successfully!', 'success');
+        document.getElementById('lastSaved').textContent = 'Saved: ' + new Date().toLocaleTimeString();
+      } catch (e) {
+        showStatus('Save failed: ' + e.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // ── Render Dashboard ───────────────────────────────
+    function renderDashboard() {
+      if (!appData) return;
+      var body = document.getElementById('adminBody');
+      body.innerHTML = '';
+
+      // Section helper
+      function section(id, title, badge, fieldsHtml) {
+        return '<div class="section-card" id="' + id + '">'
+          + '<div class="section-card-header" onclick="this.classList.toggle(\'collapsed\')">'
+          + '<h2>' + title + ' <span class="badge">' + badge + '</span></h2>'
+          + '<span class="toggle-icon">▼</span></div>'
+          + '<div class="section-card-body">' + fieldsHtml + '</div></div>';
+      }
+
+
+
+      // ── Classic Bee Prices ────────────────────────────
+      var beePricesObj = appData.classicBeePrices || {};
+      var beeSizes = Object.keys(beePricesObj).length ? Object.keys(beePricesObj) : [];
+      var beeRows = beeSizes.map(function (k) {
+        var bp = beePricesObj[k] || {};
+        return { key: k, NewBee: bp.NewBee || '', WorkerBee: bp.WorkerBee || '', QueenBee: bp.QueenBee || '' };
+      });
+      var beePricesHtml = tableEditor('classicBeePrices', ['Account Size', 'NewBee ($)', 'WorkerBee ($)', 'QueenBee ($)'], [
+        { key: 'key', label: 'Size' },
+        { key: 'NewBee', label: 'NewBee' },
+        { key: 'WorkerBee', label: 'WorkerBee' },
+        { key: 'QueenBee', label: 'QueenBee' }
+      ], beeRows, function (rows) {
+        var obj = {};
+        rows.forEach(function (r) {
+          if (r.key) {
+            obj[r.key] = {
+              NewBee: Number(r.NewBee) || 0,
+              WorkerBee: Number(r.WorkerBee) || 0,
+              QueenBee: Number(r.QueenBee) || 0
+            };
+          }
+        });
+        appData.classicBeePrices = obj;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-bee', 'Classic Bee Prices', Object.keys(appData.classicBeePrices || {}).length + ' sizes', beePricesHtml));
+
+      // ── PFP Fees 1-Step ──────────────────────────────
+      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee ($)', 'Deduction ($)'], [
+        { key: 'key', label: 'Size' },
+        { key: 'access', label: 'Access Fee' },
+        { key: 'deduction', label: 'Deduction' }
+      ], Object.keys(appData.pfpAccessFees1Step).map(function (k) {
+        return { key: k, access: appData.pfpAccessFees1Step[k], deduction: appData.pfpDeductions1Step[k] };
+      }), function (rows) {
+        var fees = {}, ded = {};
+        rows.forEach(function (r) {
+          if (r.key) { fees[r.key] = Number(r.access) || 0; ded[r.key] = Number(r.deduction) || 0; }
+        });
+        appData.pfpAccessFees1Step = fees;
+        appData.pfpDeductions1Step = ded;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-pfp1', 'PFP Fees — 1-Step', Object.keys(appData.pfpAccessFees1Step).length + ' sizes', pfp1Html));
+
+      // ── PFP Fees 2-Step ──────────────────────────────
+      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee ($)', 'Deduction ($)'], [
+        { key: 'key', label: 'Size' },
+        { key: 'access', label: 'Access Fee' },
+        { key: 'deduction', label: 'Deduction' }
+      ], Object.keys(appData.pfpAccessFees2Step).map(function (k) {
+        return { key: k, access: appData.pfpAccessFees2Step[k], deduction: appData.pfpDeductions2Step[k] };
+      }), function (rows) {
+        var fees = {}, ded = {};
+        rows.forEach(function (r) {
+          if (r.key) { fees[r.key] = Number(r.access) || 0; ded[r.key] = Number(r.deduction) || 0; }
+        });
+        appData.pfpAccessFees2Step = fees;
+        appData.pfpDeductions2Step = ded;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-pfp2', 'PFP Fees — 2-Step', Object.keys(appData.pfpAccessFees2Step).length + ' sizes', pfp2Html));
+
+      // ── PFP Risk Data ────────────────────────────────
+      var riskKeys = Object.keys(appData.pfpRiskData);
+      var riskHtml = '<div class="object-editor">';
+      riskKeys.forEach(function (rk) {
+        var rd = appData.pfpRiskData[rk];
+        riskHtml += '<div class="object-row" data-key="' + rk + '">'
+          + '<div class="form-group"><label>Risk Key</label><input class="risk-key" value="' + esc(rk) + '" /></div>'
+          + '<div class="form-group"><label>Label</label><input class="risk-label" value="' + esc(rd.label) + '" /></div>'
+          + '<div class="form-group"><label>Daily Loss</label><input class="risk-dl" value="' + esc(rd.dailyLoss) + '" /></div>'
+          + '<div class="form-group"><label>Max Loss</label><input class="risk-ml" value="' + esc(rd.maxLoss) + '" /></div>'
+          + '<div class="form-group"><label>Drawdown</label><input class="risk-dd" value="' + esc(rd.drawdown) + '" /></div>'
+          + '<div class="form-group"><label>Leverage</label><input class="risk-lev" value="' + esc(rd.leverage) + '" /></div>'
+          + '<div class="form-group"><label>Stop Loss</label><input class="risk-sl" value="' + esc(rd.stopLoss) + '" /></div>'
+          + '<div class="form-group"><label>Fee</label><input class="risk-fee" value="' + esc(rd.fee) + '" /></div>'
+          + '<div class="form-group"><label>Funded Fee %</label><input class="risk-ffeepct" value="' + esc(rd.fundedFeePct || 1) + '" /></div>'
+          + '<div class="form-group"><label>Upfront %</label><input class="risk-upfrontpct" value="' + esc(rd.upfrontPct || 0) + '" /></div>'
+          + '</div>';
+      });
+      riskHtml += '</div>';
+      riskHtml += '<div class="add-row-bar"><button onclick="addRiskRow()">+ Add Risk Level</button></div>';
+      body.insertAdjacentHTML('beforeend', section('s-risk', 'PFP Risk Data', riskKeys.length + ' levels', riskHtml));
+
+      // ── PFP Step Data ────────────────────────────────
+      var stepKeys = ['1step', '2step'];
+      var stepHtml = '<div class="object-editor">';
+      stepKeys.forEach(function (sk) {
+        var sd = appData.pfpStepData[sk];
+        if (!sd) return;
+        stepHtml += '<div class="object-row" data-key="' + sk + '">'
+          + '<div class="form-group"><label>Step Key</label><input class="step-key" value="' + esc(sk) + '" /></div>'
+          + '<div class="form-group"><label>Label</label><input class="step-label" value="' + esc(sd.label) + '" /></div>'
+          + '<div class="form-group"><label>Target 1</label><input class="step-t1" value="' + esc(sd.target1) + '" /></div>'
+          + '<div class="form-group"><label>Target 1 Label</label><input class="step-t1l" value="' + esc(sd.target1Label) + '" /></div>'
+          + '<div class="form-group"><label>Target 2</label><input class="step-t2" value="' + esc(sd.target2) + '" /></div>'
+          + '<div class="form-group"><label>Min Days</label><input class="step-md" value="' + esc(sd.minDays) + '" /></div>'
+          + '</div>';
+      });
+      stepHtml += '</div>';
+      body.insertAdjacentHTML('beforeend', section('s-step', 'PFP Step Data', stepKeys.length + ' types', stepHtml));
+
+      // ── Instant Levels ───────────────────────────────
+      var instHtml = tableEditor('instant', ['Level', 'Balance ($)', 'Buy Price ($)', 'Upgrade Fee ($)', 'Next Label'], [
+        { key: 'key', label: 'Level' },
+        { key: 'balance', label: 'Balance' },
+        { key: 'buyPrice', label: 'Buy Price' },
+        { key: 'upgrade', label: 'Upgrade Fee' },
+        { key: 'nextLabel', label: 'Next Label' }
+      ], Object.keys(appData.instantLevels).sort(function (a,b){return Number(a)-Number(b);}).map(function (k) {
+        var d = appData.instantLevels[k];
+        return { key: k, balance: d.balance, buyPrice: d.buyPrice || 0, upgrade: d.upgrade, nextLabel: d.nextLabel };
+      }), function (rows) {
+        var obj = {};
+        rows.forEach(function (r) {
+          if (r.key) {
+            obj[r.key] = { balance: Number(r.balance) || 0, buyPrice: Number(r.buyPrice) || 0, upgrade: Number(r.upgrade) || 0, nextLabel: r.nextLabel || '' };
+          }
+        });
+        appData.instantLevels = obj;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-instant', 'Instant Growth Levels', Object.keys(appData.instantLevels).length + ' levels', instHtml));
+
+      // ── Classic Details ──────────────────────────────
+      var cdHtml = detailEditor('classicDetails', appData.classicDetails, function (val) {
+        appData.classicDetails = val;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-cd', 'Classic Details', appData.classicDetails.length + ' rows', cdHtml));
+
+      // ── Instant Details ──────────────────────────────
+      var idHtml = detailEditor('instantDetails', appData.instantDetails, function (val) {
+        appData.instantDetails = val;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-id', 'Instant Details', appData.instantDetails.length + ' rows', idHtml));
+
+      // ── PFP Details ──────────────────────────────────
+      var pdHtml = detailEditor('pfpDetails', appData.pfpStaticDetails, function (val) {
+        appData.pfpStaticDetails = val;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-pd', 'PFP Static Details', appData.pfpStaticDetails.length + ' rows', pdHtml));
+
+      // ── Coupons ──────────────────────────────────────
+      var cHtml = detailEditor('coupons', appData.coupons, function (val) {
+        appData.coupons = val;
+      }, [
+        { key: 'code', label: 'Code' },
+        { key: 'reward', label: 'Reward' }
+      ]);
+      body.insertAdjacentHTML('beforeend', section('s-coupons', 'Coupons', appData.coupons.length + ' codes', cHtml));
+
+      // ── PFP Price Labels ─────────────────────────────
+      var pfpLabelDefaults = appData.pfpPriceLabels || [
+        { key: 'accessFeeLabel', value: 'Access Fee', description: 'One-time fee to access and start the prop firm challenge' },
+        { key: 'initialFeeLabel', value: 'Initial Fee', description: 'Initial upfront payment required to begin' },
+        { key: 'fundedFeeLabel', value: 'After Evaluation Funded Fee From Profit', description: 'Fee deducted from your first profit payout after successfully passing the evaluation' }
+      ];
+      var plHtml = detailEditor('pfpPriceLabels', pfpLabelDefaults, function (val) {
+        appData.pfpPriceLabels = val;
+      }, [
+        { key: 'key', label: 'Label Key' },
+        { key: 'value', label: 'Label Text' },
+        { key: 'description', label: 'Tooltip Description' }
+      ]);
+      body.insertAdjacentHTML('beforeend', section('s-pfp-labels', 'PFP Price Box Labels', pfpLabelDefaults.length + ' labels', plHtml));
+
+      // ── Prohibited ───────────────────────────────────
+      var pHtml = stringListEditor('prohibited', appData.prohibited, function (val) {
+        appData.prohibited = val;
+      });
+      body.insertAdjacentHTML('beforeend', section('s-prohibited', 'Prohibited Items', appData.prohibited.length + ' items', pHtml));
+
+      // ── Save button at bottom ────────────────────────
+      body.insertAdjacentHTML('beforeend',
+        '<div style="text-align:center;padding:24px 0 40px">'
+        + '<button class="btn btn-success" style="padding:14px 48px;font-size:1rem;" onclick="collectAll();saveData()">'
+        + 'Save All Changes</button></div>'
+      );
+    }
+
+    // ── Table Editor ───────────────────────────────────
+    var __teSave = {};
+    function tableEditor(id, headers, fields, rows, onSave) {
+      // Store callback directly (not via HTML script tag)
+      __teSave[id] = onSave;
+      var html = '<table class="data-table" id="te-' + id + '"><thead><tr>';
+      headers.forEach(function (h) { html += '<th>' + h + '</th>'; });
+      html += '<th style="width:50px"></th></tr></thead><tbody>';
+      rows.forEach(function (r, i) {
+        html += '<tr data-idx="' + i + '">';
+        fields.forEach(function (f) {
+          html += '<td><input class="te-' + f.key + '" value="' + esc(String(r[f.key] || '')) + '" /></td>';
+        });
+        html += '<td class="row-actions"><button onclick="deleteTableRow(this,\'' + id + '\')" title="Remove">✕</button></td></tr>';
+      });
+      html += '</tbody></table>';
+      html += '<div class="add-row-bar"><button onclick="addTableRow(\'' + id + '\')">+ Add Row</button></div>';
+      html += '<input type="hidden" class="te-collector" value="' + id + '" />';
+      return html;
+    }
+
+    function addTableRow(id) {
+      var tbody = document.querySelector('#te-' + id + ' tbody');
+      if (!tbody) return;
+      var fields = tbody.querySelectorAll('tr')[0];
+      if (!fields) return;
+      var inputs = fields.querySelectorAll('input');
+      var tr = document.createElement('tr');
+      inputs.forEach(function (inp) {
+        var td = document.createElement('td');
+        var className = inp.className;
+        var newInput = document.createElement('input');
+        newInput.className = className;
+        newInput.value = '';
+        td.appendChild(newInput);
+        tr.appendChild(td);
+      });
+      var actionTd = document.createElement('td');
+      actionTd.className = 'row-actions';
+      actionTd.innerHTML = '<button onclick="deleteTableRow(this,\'' + id + '\')" title="Remove">✕</button>';
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    }
+
+    function deleteTableRow(btn, id) {
+      var tr = btn.closest('tr');
+      if (tr && tr.parentNode && tr.parentNode.querySelectorAll('tr').length > 1) {
+        tr.remove();
+      }
+    }
+
+    function collectTable(id, fields, onSave) {
+      var tbody = document.querySelector('#te-' + id + ' tbody');
+      if (!tbody) return;
+      var rows = tbody.querySelectorAll('tr');
+      var data = [];
+      rows.forEach(function (tr) {
+        var row = {};
+        fields.forEach(function (f) {
+          var inp = tr.querySelector('.te-' + f);
+          row[f] = inp ? inp.value : '';
+        });
+        data.push(row);
+      });
+      onSave(data);
+    }
+
+    // ── Detail Editor (label/value arrays) ─────────────
+    var __deSave = {};
+    function detailEditor(id, data, onSave, customFields) {
+      // Store callback directly (not via HTML script tag)
+      __deSave[id] = onSave;
+      var fields = customFields || [
+        { key: 'label', label: 'Label' },
+        { key: 'value', label: 'Value' }
+      ];
+      var html = '<div class="object-editor" id="de-' + id + '">';
+      data.forEach(function (item, i) {
+        html += '<div class="object-row" data-idx="' + i + '">';
+        fields.forEach(function (f) {
+          html += '<div class="form-group"><label>' + f.label + '</label>'
+            + '<input class="de-' + id + '-' + f.key + '" value="' + esc(String(item[f.key] || '')) + '" /></div>';
+        });
+        html += '<button class="remove-btn" onclick="deleteDetailRow(this,\'' + id + '\')">✕</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '<div class="add-row-bar"><button onclick="addDetailRow(\'' + id + '\')">+ Add Row</button></div>';
+      html += '<input type="hidden" class="de-fields-' + id + '" value=\'' + JSON.stringify(fields) + '\' />';
+      return html;
+    }
+
+    function addDetailRow(id) {
+      var container = document.getElementById('de-' + id);
+      if (!container) return;
+      var fields = JSON.parse((document.querySelector('.de-fields-' + id) || {}).value || '[]');
+      var div = document.createElement('div');
+      div.className = 'object-row';
+      fields.forEach(function (f) {
+        var fg = document.createElement('div');
+        fg.className = 'form-group';
+        fg.innerHTML = '<label>' + f.label + '</label><input class="de-' + id + '-' + f.key + '" value="" />';
+        div.appendChild(fg);
+      });
+      div.insertAdjacentHTML('beforeend', '<button class="remove-btn" onclick="deleteDetailRow(this,\'' + id + '\')">✕</button>');
+      container.appendChild(div);
+    }
+
+    function deleteDetailRow(btn, id) {
+      var row = btn.closest('.object-row');
+      var container = document.getElementById('de-' + id);
+      if (row && container && container.querySelectorAll('.object-row').length > 1) {
+        row.remove();
+      }
+    }
+
+    function collectDetail(id, onSave) {
+      var fields = JSON.parse((document.querySelector('.de-fields-' + id) || {}).value || '[]');
+      var container = document.getElementById('de-' + id);
+      if (!container) return;
+      var rows = container.querySelectorAll('.object-row');
+      var data = [];
+      rows.forEach(function (row) {
+        var item = {};
+        fields.forEach(function (f) {
+          var inp = row.querySelector('.de-' + id + '-' + f.key);
+          item[f.key] = inp ? inp.value : '';
+        });
+        data.push(item);
+      });
+      onSave(data);
+    }
+
+    // ── String List Editor (for prohibited) ────────────
+    var __sleSave = {};
+    function stringListEditor(id, data, onSave) {
+      // Store callback directly (not via HTML script tag)
+      __sleSave[id] = onSave;
+      var html = '<div class="object-editor" id="sle-' + id + '">';
+      data.forEach(function (item, i) {
+        html += '<div class="object-row">'
+          + '<div class="form-group" style="flex:1"><label>Item</label><input class="sle-item" value="' + esc(item) + '" /></div>'
+          + '<button class="remove-btn" onclick="deleteStringRow(this,\'' + id + '\')">✕</button>'
+          + '</div>';
+      });
+      html += '</div>';
+      html += '<div class="add-row-bar"><button onclick="addStringRow(\'' + id + '\')">+ Add Item</button></div>';
+      return html;
+    }
+
+    function addStringRow(id) {
+      var container = document.getElementById('sle-' + id);
+      if (!container) return;
+      var div = document.createElement('div');
+      div.className = 'object-row';
+      div.innerHTML = '<div class="form-group" style="flex:1"><label>Item</label><input class="sle-item" value="" /></div>'
+        + '<button class="remove-btn" onclick="deleteStringRow(this,\'' + id + '\')">✕</button>';
+      container.appendChild(div);
+    }
+
+    function deleteStringRow(btn, id) {
+      var row = btn.closest('.object-row');
+      var container = document.getElementById('sle-' + id);
+      if (row && container && container.querySelectorAll('.object-row').length > 1) {
+        row.remove();
+      }
+    }
+
+    function collectStringList(id, onSave) {
+      var container = document.getElementById('sle-' + id);
+      if (!container) return;
+      var rows = container.querySelectorAll('.object-row');
+      var data = [];
+      rows.forEach(function (row) {
+        var inp = row.querySelector('.sle-item');
+        if (inp && inp.value.trim()) data.push(inp.value.trim());
+      });
+      onSave(data);
+    }
+
+    // ── Collect All Data ───────────────────────────────
+    function collectAll() {
+      if (!appData) return;
+
+      // Collect table editors
+      ['classicBeePrices', 'pfp1', 'pfp2', 'instant'].forEach(function (id) {
+        var fn = __teSave[id];
+        if (fn) {
+          var fields = [];
+          var tbody = document.querySelector('#te-' + id + ' tbody');
+          if (tbody && tbody.querySelectorAll('tr').length > 0) {
+            var firstRowInputs = tbody.querySelectorAll('tr')[0].querySelectorAll('input');
+            firstRowInputs.forEach(function (inp) {
+              var cls = Array.from(inp.classList).filter(function(c){return c.startsWith('te-');})[0];
+              if (cls) fields.push(cls.replace('te-', ''));
+            });
+          }
+          collectTable(id, fields, fn);
+        }
+      });
+
+      // Collect risk data (only if rows exist in DOM)
+      var riskRows = document.querySelectorAll('#s-risk .object-row');
+      if (riskRows.length > 0) {
+        var riskData = {};
+        riskRows.forEach(function (row) {
+          var key = (row.querySelector('.risk-key') || {}).value;
+          if (key) {
+            riskData[key] = {
+              label: (row.querySelector('.risk-label') || {}).value || '',
+              dailyLoss: (row.querySelector('.risk-dl') || {}).value || '',
+              maxLoss: (row.querySelector('.risk-ml') || {}).value || '',
+              drawdown: (row.querySelector('.risk-dd') || {}).value || '',
+              leverage: (row.querySelector('.risk-lev') || {}).value || '',
+              stopLoss: (row.querySelector('.risk-sl') || {}).value || '',
+              fee: (row.querySelector('.risk-fee') || {}).value || '',
+              fundedFeePct: Number((row.querySelector('.risk-ffeepct') || {}).value) || 1,
+              upfrontPct: Number((row.querySelector('.risk-upfrontpct') || {}).value) || 0
+            };
+          }
+        });
+        appData.pfpRiskData = riskData;
+      }
+
+      // Collect step data (only if rows exist in DOM)
+      var stepRows = document.querySelectorAll('#s-step .object-row');
+      if (stepRows.length > 0) {
+        var stepData = {};
+        stepRows.forEach(function (row) {
+          var key = (row.querySelector('.step-key') || {}).value;
+          if (key) {
+            stepData[key] = {
+              label: (row.querySelector('.step-label') || {}).value || '',
+              target1: (row.querySelector('.step-t1') || {}).value || '',
+              target1Label: (row.querySelector('.step-t1l') || {}).value || '',
+              target2: (row.querySelector('.step-t2') || {}).value || '',
+              minDays: (row.querySelector('.step-md') || {}).value || ''
+            };
+          }
+        });
+        appData.pfpStepData = stepData;
+      }
+
+      // Collect detail editors
+      ['classicDetails', 'instantDetails', 'pfpDetails', 'coupons', 'pfpPriceLabels'].forEach(function (id) {
+        var fn = __deSave[id];
+        if (fn) collectDetail(id, fn);
+      });
+
+      // Collect string lists
+      ['prohibited'].forEach(function (id) {
+        var fn = __sleSave[id];
+        if (fn) collectStringList(id, fn);
+      });
+    }
+
+    // Override save to collect first
+    var origSave = saveData;
+    saveData = function () {
+      collectAll();
+      origSave();
+    };
+
+    // ── Utility ────────────────────────────────────────
+    function esc(str) {
+      if (typeof str !== 'string') return String(str || '');
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // Add risk row
+    window.addRiskRow = function () {
+      var container = document.querySelector('#s-risk .object-editor');
+      if (!container) return;
+      var div = document.createElement('div');
+      div.className = 'object-row';
+      div.innerHTML =
+        '<div class="form-group"><label>Risk Key</label><input class="risk-key" value="" /></div>'
+        + '<div class="form-group"><label>Label</label><input class="risk-label" value="" /></div>'
+        + '<div class="form-group"><label>Daily Loss</label><input class="risk-dl" value="" /></div>'
+        + '<div class="form-group"><label>Max Loss</label><input class="risk-ml" value="" /></div>'
+        + '<div class="form-group"><label>Drawdown</label><input class="risk-dd" value="" /></div>'
+        + '<div class="form-group"><label>Leverage</label><input class="risk-lev" value="" /></div>'
+        + '<div class="form-group"><label>Stop Loss</label><input class="risk-sl" value="" /></div>'
+        + '<div class="form-group"><label>Fee</label><input class="risk-fee" value="" /></div>'
+        + '<div class="form-group"><label>Funded Fee %</label><input class="risk-ffeepct" value="1" /></div>'
+        + '<div class="form-group"><label>Upfront %</label><input class="risk-upfrontpct" value="0" /></div>'
+      container.appendChild(div);
+    };
+  </script>
+</body>
+</html>

@@ -123,6 +123,7 @@
         <button class="pf-tab active" data-pftab="classic">2-Step Classic</button>
         <button class="pf-tab" data-pftab="pfp">Pay From Profits</button>
         <button class="pf-tab" data-pftab="instant">Instant Growth</button>
+        <button class="pf-tab" data-pftab="abook">AADS</button>
       </div>
     </div>
   </div>
@@ -134,21 +135,37 @@
       <!-- === 2-STEP CLASSIC === -->
       <div class="pf-panel active" id="pfpanel-classic">
 
-        <!-- Account Size Selector -->          <div class="pf-select-section">
-          <label class="pf-select-label" for="classicSize">Select Account Size</label>
-          <div class="pf-select-wrapper">
-            <select id="classicSize" class="pf-select">
-              <option value="2000" selected>$2,000</option>
-              <option value="5000">$5,000</option>
-              <option value="10000">$10,000</option>
-              <option value="25000" >$25,000</option>
-              <option value="50000">$50,000</option>
-              <option value="100000">$100,000</option>
-              <option value="200000">$200,000</option>
-            </select>
-            <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+        <!-- Selectors Row -->
+        <div class="pf-selectors-row">
+          <div class="pf-select-section" style="margin-bottom:0;">
+            <label class="pf-select-label" for="classicSize">Account Size</label>
+            <div class="pf-select-wrapper">
+              <select id="classicSize" class="pf-select">
+                <option value="2000" selected>$2,000</option>
+                <option value="5000">$5,000</option>
+                <option value="10000">$10,000</option>
+                <option value="25000" >$25,000</option>
+                <option value="50000">$50,000</option>
+                <option value="100000">$100,000</option>
+                <option value="200000">$200,000</option>
+              </select>
+              <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="pf-select-section" style="margin-bottom:0;">
+            <label class="pf-select-label" for="classicBee">Bee Tier</label>
+            <div class="pf-select-wrapper">
+              <select id="classicBee" class="pf-select">
+                <option value="NewBee" selected>NewBee 1:50</option>
+                <option value="WorkerBee">WorkerBee 1:100</option>
+                <option value="QueenBee">QueenBee 1:200</option>
+              </select>
+              <svg class="pf-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -201,6 +218,11 @@
                 <div class="pf-coupon-item">
                   <div class="pf-coupon-code">MOZO20</div>
                   <div class="pf-coupon-reward">20% OFF</div>
+                </div>
+                <div class="pf-coupon-item" id="classicWelcomeItem">
+                  <div class="pf-coupon-code">WELCOME25</div>
+                  <div class="pf-coupon-reward">25% OFF</div>
+                  <span class="pf-coupon-price" id="classicWelcomePrice"></span>
                 </div>
               </div>
             </div>
@@ -310,11 +332,27 @@
           <!-- Price & Coupon Card -->
           <div class="pf-price-card" id="pfpPriceCard">
             <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
-              <span class="pf-price-label">Access Fee</span>
+              <div class="pf-price-label-row">
+                <span class="pf-price-label" id="pfpAccessFeeLabel">Access Fee</span>
+                <button class="pf-info-btn" data-key="accessFeeLabel" aria-label="Info">ⓘ</button>
+                <div class="pf-tooltip" id="tooltip-accessFeeLabel"></div>
+              </div>
               <span class="pf-price-value" style="font-size:1.5rem;" id="pfpTotalFee">$19</span>
             </div>
             <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
-              <span class="pf-price-label">Funded Account Deduction</span>
+              <div class="pf-price-label-row">
+                <span class="pf-price-label" id="pfpInitialFeeLabel">Initial Fee</span>
+                <button class="pf-info-btn" data-key="initialFeeLabel" aria-label="Info">ⓘ</button>
+                <div class="pf-tooltip" id="tooltip-initialFeeLabel"></div>
+              </div>
+              <span class="pf-price-value" style="font-size:1.5rem;" id="pfpUpfront">—</span>
+            </div>
+            <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
+              <div class="pf-price-label-row">
+                <span class="pf-price-label" id="pfpFundedFeeLabel">After Evaluation Funded Fee From Profit</span>
+                <button class="pf-info-btn" data-key="fundedFeeLabel" aria-label="Info">ⓘ</button>
+                <div class="pf-tooltip" id="tooltip-fundedFeeLabel"></div>
+              </div>
               <span class="pf-price-value" style="font-size:1.5rem;" id="pfpDeduction">$49</span>
             </div>
 
@@ -352,6 +390,190 @@
             <div class="pf-prohibited-item">❌ Exploiting technical glitches</div>
           </div>
         </div>
+      </div>
+
+      <!-- === FUNDEDHIVE AADS === -->
+      <div class="pf-panel" id="pfpanel-abook">
+
+        <div class="pf-aads-header">
+          <span class="pf-aads-badge">AADS</span>
+          <h2 class="pf-aads-title">Automated A-Book Dealing System</h2>
+          <p class="pf-aads-subtitle">Real funding. Automated A-book execution. Smart contract payouts.</p>
+          <a href="https://fundedhive.com/aads" target="_blank" rel="noopener" class="pf-aads-cta">
+            Learn More on FundedHive
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17l9.2-9.2M17 17V7H7"/>
+            </svg>
+          </a>
+        </div>
+
+        <!-- How It Works -->
+        <div class="pf-aads-section">
+          <p class="pf-aads-desc">FundedHive's unique market execution system routes funded account trades to the <strong>real live market</strong> when the account is in profit. If the account drops more than <strong>-1% below the initial balance</strong>, the system automatically switches to <strong>B-book</strong> until you return above the starting level. To avoid unnecessary switching, keep a small profit buffer at all times.</p>
+        </div>
+
+        <!-- Routing Flow -->
+        <div class="pf-aads-flow">
+          <h3 class="pf-aads-flow-title">Routing Flow</h3>
+          <div class="pf-aads-flow-grid">
+            <div class="pf-aads-step">
+              <span class="pf-aads-step-num">01</span>
+              <div class="pf-aads-step-body">
+                <span class="pf-aads-step-label">START</span>
+                <span class="pf-aads-step-desc">Live Capital</span>
+              </div>
+            </div>
+            <div class="pf-aads-step pf-aads-step-trigger">
+              <span class="pf-aads-step-num">02</span>
+              <div class="pf-aads-step-body">
+                <span class="pf-aads-step-label">TRIGGER</span>
+                <span class="pf-aads-step-desc">Drawdown -1% below initial balance</span>
+              </div>
+            </div>
+            <div class="pf-aads-step pf-aads-step-warn">
+              <span class="pf-aads-step-num">03</span>
+              <div class="pf-aads-step-body">
+                <span class="pf-aads-step-label">FORCE CLOSE</span>
+                <span class="pf-aads-step-desc">Switch to B-Book</span>
+              </div>
+            </div>
+            <div class="pf-aads-step pf-aads-step-warn">
+              <span class="pf-aads-step-num">04</span>
+              <div class="pf-aads-step-body">
+                <span class="pf-aads-step-label">RECOVERY</span>
+                <span class="pf-aads-step-desc">B-Book — profit earned <strong>cannot</strong> be withdrawn</span>
+              </div>
+            </div>
+            <div class="pf-aads-step pf-aads-step-ok">
+              <span class="pf-aads-step-num">05</span>
+              <div class="pf-aads-step-body">
+                <span class="pf-aads-step-label">REACTIVATION</span>
+                <span class="pf-aads-step-desc">Activate A-Book after reaching initial balance</span>
+              </div>
+            </div>
+            <div class="pf-aads-step pf-aads-step-ok">
+              <span class="pf-aads-step-num">06</span>
+              <div class="pf-aads-step-body">
+                <span class="pf-aads-step-label">RESULT</span>
+                <span class="pf-aads-step-desc">Switch to A-Book — real profits can now be earned</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- $5,000 Account Example -->
+        <div class="pf-aads-example">
+          <h3 class="pf-aads-flow-title">$5,000 Account — AADS in Action</h3>
+          <p class="pf-aads-desc">You start a funded account with <strong>$5,000</strong> on A-Book (AADS). Here's how the system responds to different scenarios:</p>
+
+          <div class="pf-aads-example-grid">
+            <div class="pf-aads-example-card pf-aads-example-profit">
+              <div class="pf-aads-example-head">
+                <span class="pf-aads-example-badge">✅ Profitable</span>
+                <span class="pf-aads-example-amount pf-green">+$250</span>
+              </div>
+              <div class="pf-aads-example-detail">
+                <p>You grow the account to <strong>$5,250</strong>. The system sees you're above the initial balance and keeps you on <strong>A-Book</strong>. You can withdraw profits instantly via the smart contract.</p>
+              </div>
+            </div>
+            <div class="pf-aads-example-card pf-aads-example-drawdown">
+              <div class="pf-aads-example-head">
+                <span class="pf-aads-example-badge">⚠️ -1% Trigger</span>
+                <span class="pf-aads-example-amount pf-red">−$50</span>
+              </div>
+              <div class="pf-aads-example-detail">
+                <p>Account drops to <strong>$4,949</strong> (-1.02%). Positions are closed. System switches to <strong>B-book</strong>. Any further B-book profits <strong>cannot</strong> be withdrawn — they convert to Hive Coins.</p>
+              </div>
+            </div>
+            <div class="pf-aads-example-card pf-aads-example-recovery">
+              <div class="pf-aads-example-head">
+                <span class="pf-aads-example-badge">↩️ Recovery</span>
+                <span class="pf-aads-example-amount pf-green">Back to $5,000+</span>
+              </div>
+              <div class="pf-aads-example-detail">
+                <p>You trade the account back above <strong>$5,000</strong> in B-book. Once the balance reaches the initial level, <strong>A-Book reactivates</strong> and real withdrawable profits resume.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pure Trade Example -->
+          <div class="pf-aads-trades">
+            <h4 class="pf-aads-trades-title">Trade-by-Trade Walkthrough</h4>
+            <table class="pf-aads-trades-table">
+              <thead>
+                <tr>
+                  <th>Trade</th>
+                  <th>Result</th>
+                  <th>Balance</th>
+                  <th>Execution</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="pf-aads-trade-num">Start</span></td>
+                  <td>—</td>
+                  <td class="pf-mono">$5,000.00</td>
+                  <td><span class="pf-aads-exec-badge pf-aads-exec-a">A-Book</span></td>
+                  <td><span class="pf-aads-status pf-aads-status-ok">Live Capital</span></td>
+                </tr>
+                <tr>
+                  <td><span class="pf-aads-trade-num">#1</span></td>
+                  <td class="pf-red">−1%</td>
+                  <td class="pf-mono">$4,950.00</td>
+                  <td><span class="pf-aads-exec-badge pf-aads-exec-a">A-Book</span></td>
+                  <td><span class="pf-aads-status pf-aads-status-neutral">Still above -1% threshold</span></td>
+                </tr>
+                <tr class="pf-aads-tr-trigger">
+                  <td><span class="pf-aads-trade-num">#2</span></td>
+                  <td class="pf-red">−1%</td>
+                  <td class="pf-mono">$4,900.50</td>
+                  <td><span class="pf-aads-exec-badge pf-aads-exec-b">B-Book ⚠️</span></td>
+                  <td><span class="pf-aads-status pf-aads-status-warn">-2% below initial → AADS switches to B-Book</span></td>
+                </tr>
+                <tr>
+                  <td><span class="pf-aads-trade-num">#3</span></td>
+                  <td class="pf-green">+2%</td>
+                  <td class="pf-mono">$4,998.51</td>
+                  <td><span class="pf-aads-exec-badge pf-aads-exec-b">B-Book</span></td>
+                  <td><span class="pf-aads-status pf-aads-status-warn">Profit cannot be withdrawn (B-Book)</span></td>
+                </tr>
+                <tr class="pf-aads-tr-recovery">
+                  <td><span class="pf-aads-trade-num">#4</span></td>
+                  <td class="pf-green">+2%</td>
+                  <td class="pf-mono">$5,098.48</td>
+                  <td><span class="pf-aads-exec-badge pf-aads-exec-a">A-Book ✅</span></td>
+                  <td><span class="pf-aads-status pf-aads-status-ok">Above $5,000 → A-Book reactivated, real profits resume</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Truth Protocol -->
+        <div class="pf-aads-truth">
+          <h3 class="pf-aads-flow-title">Truth Protocol</h3>
+          <p class="pf-aads-desc">No payout requests followed by suspenseful waits. Payout eligibility is decided by <strong>systematic code</strong>, not a human manager.</p>
+          <div class="pf-aads-truth-grid">
+            <div class="pf-aads-truth-card">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <strong>60-Second Verification</strong>
+              <p>Code analyzes your A-book profits instantly, giving you the ability to receive funds to MetaMask as USDC within seconds.</p>
+            </div>
+            <div class="pf-aads-truth-card">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <strong>NFT Certification</strong>
+              <p>Every new live account and payout is minted as a permanent NFT on the blockchain, sent to your MetaMask wallet as proof of performance.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- === INSTANT GROWTH (GOLDEN TOWER) === -->
@@ -409,6 +631,10 @@
 
           <!-- Price & Coupon Card -->
           <div class="pf-price-card" id="instantPriceCard">
+            <div class="pf-price-amount" style="padding-top:0;border-bottom:none;">
+              <span class="pf-price-label">Buy Price</span>
+              <span class="pf-price-value" style="font-size:1.5rem;" id="instantBuyPrice">$299</span>
+            </div>
             <div class="pf-price-amount">
               <span class="pf-price-label" id="instantLevelLabel">Upgrade to Level 5</span>
               <span class="pf-price-value" id="instantUpgradeFee">$3,200</span>
@@ -499,57 +725,63 @@
   <!-- Scripts -->
   <script>
     // ═══════════════════════════════════════════════════════════
-    // Google Sheets Live Data Configuration
+    // Data loads from MongoDB API, falls back to inline seed data.
     // ═══════════════════════════════════════════════════════════
 
     // ═══════════════════════════════════════════════════════════
-    // Google Sheets API URL — fetched from server to keep it out of source control
+    // App Data Store (populated from MongoDB API)
     // ═══════════════════════════════════════════════════════════
 
-    let SHEETS_API_URL = '';
+    var appData = {};
 
-    async function fetchConfig() {
-      try {
-        var res = await fetch('/api/config');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        var config = await res.json();
-        SHEETS_API_URL = config.sheetsApiUrl || '';
-      } catch (e) {
-        console.warn('⚠️ Could not fetch config from server:', e.message);
-      }
+    // ═══════════════════════════════════════════════════════════
+    // Loading Indicator
+    // ═══════════════════════════════════════════════════════════
+
+    var pfLoading = document.getElementById('pfLoading');
+
+    function showLoading() {
+      if (pfLoading) pfLoading.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      if (pfLoading) pfLoading.classList.add('hidden');
     }
 
     // ═══════════════════════════════════════════════════════════
-    // Default Fallback Data (used when sheet is unavailable)
+    // Load data — localStorage cache, then MongoDB API
     // ═══════════════════════════════════════════════════════════
 
-    const DEFAULTS = {
-      classicPrices: { 2000: 15, 5000: 38, 10000: 78, 25000: 198, 50000: 298, 100000: 498, 200000: 798 },
-      pfpAccessFees1Step: { 5000: 29, 10000: 59, 25000: 149, 50000: 249, 100000: 399, 200000: 699 },
-      pfpAccessFees2Step: { 5000: 19, 10000: 39, 25000: 99, 50000: 149, 100000: 249, 200000: 399 },
-      pfpDeductions1Step: { 5000: 69, 10000: 149, 25000: 349, 50000: 699, 100000: 1399, 200000: 2499 },
-      pfpDeductions2Step: { 5000: 49, 10000: 99, 25000: 249, 50000: 499, 100000: 999, 200000: 1999 },
-      pfpRiskData: {
-        low:      { label: 'Low Risk',       dailyLoss: '2%',   maxLoss: '1%',   drawdown: '5%',  leverage: '1:200', stopLoss: 'Opening & Closing', fee: 'Pay 100% from first payout' },
-        moderate: { label: 'Moderate Risk',  dailyLoss: '3%',   maxLoss: '1.5%', drawdown: '6%',  leverage: '1:100', stopLoss: 'Closing only',        fee: 'Pay 100% from first payout' },
-        medium:   { label: 'Medium Risk',    dailyLoss: '4%',   maxLoss: '2%',   drawdown: '7%',  leverage: '1:50',  stopLoss: 'Not required',        fee: 'Pay 50% from first payout' },
-        high:     { label: 'High Risk',      dailyLoss: '5%',   maxLoss: '3%',   drawdown: '10%', leverage: '1:30',  stopLoss: 'Not required',        fee: 'Standard fee from first payout' }
-      },
-      pfpStepData: {
-        '1step': { label: '1-Step', target1: '10%', target1Label: 'Profit Target',              target2: '—', minDays: '3 days' },
-        '2step': { label: '2-Step', target1: '8%',  target1Label: 'Profit Target — Phase 1',     target2: '6%', minDays: '3 days per phase' }
-      },
-      instantLevels: {
-        1:  { balance: 10000,  upgrade: 400,   nextLabel: 'Upgrade to Level 2' },
-        2:  { balance: 20000,  upgrade: 800,   nextLabel: 'Upgrade to Level 3' },
-        3:  { balance: 40000,  upgrade: 1600,  nextLabel: 'Upgrade to Level 4' },
-        4:  { balance: 80000,  upgrade: 3200,  nextLabel: 'Upgrade to Level 5' },
-        5:  { balance: 160000, upgrade: 4800,  nextLabel: 'Upgrade to Level 6' },
-        6:  { balance: 240000, upgrade: 7200,  nextLabel: 'Upgrade to Level 7' },
-        7:  { balance: 360000, upgrade: 9600,  nextLabel: 'Upgrade to Level 8' },
-        8:  { balance: 480000, upgrade: 12800, nextLabel: 'Upgrade to Level 9' },
-        9:  { balance: 640000, upgrade: 20000, nextLabel: 'Upgrade to Level 10' },
-        10: { balance: 1000000, upgrade: 0,    nextLabel: 'Max Level Reached' }
+    function loadFromCache() {
+      try {
+        var cached = localStorage.getItem('pfDataCache');
+        if (!cached) return null;
+        localStorage.removeItem('pfDataCache');
+        var parsed = JSON.parse(cached);
+        if (parsed && parsed.data && parsed.timestamp) {
+          var age = Date.now() - parsed.timestamp;
+          // Use cache if less than 10 minutes old
+          if (age < 10 * 60 * 1000) {
+            return parsed.data;
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Inline seed data — used when MongoDB is unavailable
+    // ═══════════════════════════════════════════════════════════
+
+    var DEFAULT_SEED = {
+      classicBeePrices: {
+        2000:   { NewBee: 15,   WorkerBee: 19,   QueenBee: 29 },
+        5000:   { NewBee: 29,   WorkerBee: 39,   QueenBee: 49 },
+        10000:  { NewBee: 79,   WorkerBee: 99,   QueenBee: 119 },
+        25000:  { NewBee: 149,  WorkerBee: 199,  QueenBee: 229 },
+        50000:  { NewBee: 299,  WorkerBee: 349,  QueenBee: 399 },
+        100000: { NewBee: 499,  WorkerBee: 599,  QueenBee: 699 },
+        200000: { NewBee: 899,  WorkerBee: 1099, QueenBee: 1199 }
       },
       classicDetails: [
         { label: 'Profit Target — Phase 1', value: '8%' },
@@ -574,6 +806,32 @@
         { label: 'Platform', value: 'cTrader' },
         { label: 'Payout Method', value: 'USDC via smart contract' }
       ],
+      pfpAccessFees1Step: { 5000: 19, 10000: 39, 25000: 99, 50000: 199, 100000: 399, 200000: 799 },
+      pfpDeductions1Step: { 5000: 69, 10000: 149, 25000: 349, 50000: 699, 100000: 1399, 200000: 2499 },
+      pfpAccessFees2Step: { 5000: 19, 10000: 39, 25000: 99, 50000: 199, 100000: 399, 200000: 799 },
+      pfpDeductions2Step: { 5000: 49, 10000: 99, 25000: 249, 50000: 499, 100000: 999, 200000: 1999 },
+      pfpRiskData: {
+        low:      { label: 'Low Risk',       dailyLoss: '2%',   maxLoss: '1%',   drawdown: '5%',  leverage: '1:200', stopLoss: 'Opening & Closing', fee: 'Pay 100% from first payout', fundedFeePct: 1, upfrontPct: 0 },
+        moderate: { label: 'Moderate Risk',  dailyLoss: '3%',   maxLoss: '1.5%', drawdown: '6%',  leverage: '1:100', stopLoss: 'Closing only',        fee: 'Pay 100% from first payout', fundedFeePct: 2, upfrontPct: 0 },
+        medium:   { label: 'Medium Risk',    dailyLoss: '4%',   maxLoss: '2%',   drawdown: '7%',  leverage: '1:50',  stopLoss: 'Not required',        fee: 'Pay 50% from first payout', fundedFeePct: 2.5, upfrontPct: 50 },
+        high:     { label: 'High Risk',      dailyLoss: '5%',   maxLoss: '3%',   drawdown: '10%', leverage: '1:30',  stopLoss: 'Not required',        fee: 'Standard fee from first payout', fundedFeePct: 3, upfrontPct: 50 }
+      },
+      pfpStepData: {
+        '1step': { label: '1-Step', target1: '10%', target1Label: 'Profit Target',              target2: '—', minDays: '3 days' },
+        '2step': { label: '2-Step', target1: '8%',  target1Label: 'Profit Target — Phase 1',    target2: '6%', minDays: '3 days per phase' }
+      },
+      instantLevels: {
+        1:  { balance: 10000,  upgrade: 0,     buyPrice: 299,  nextLabel: 'Upgrade to Level 2' },
+        2:  { balance: 20000,  upgrade: 400,   buyPrice: 0,    nextLabel: 'Upgrade to Level 3' },
+        3:  { balance: 40000,  upgrade: 800,   buyPrice: 0,    nextLabel: 'Upgrade to Level 4' },
+        4:  { balance: 80000,  upgrade: 1600,  buyPrice: 0,    nextLabel: 'Upgrade to Level 5' },
+        5:  { balance: 160000, upgrade: 3200,  buyPrice: 0,    nextLabel: 'Upgrade to Level 6' },
+        6:  { balance: 240000, upgrade: 4800,  buyPrice: 0,    nextLabel: 'Upgrade to Level 7' },
+        7:  { balance: 360000, upgrade: 7200,  buyPrice: 0,    nextLabel: 'Upgrade to Level 8' },
+        8:  { balance: 480000, upgrade: 9600,  buyPrice: 0,    nextLabel: 'Upgrade to Level 9' },
+        9:  { balance: 640000, upgrade: 12800, buyPrice: 0,    nextLabel: 'Upgrade to Level 10' },
+        10: { balance: 1000000, upgrade: 0,    buyPrice: 0,    nextLabel: 'Max Level' }
+      },
       instantDetails: [
         { label: 'Starting Balance', value: '$10,000 (Level 1)' },
         { label: 'Max Account', value: '$1,000,000 (Level 10)' },
@@ -594,6 +852,8 @@
         { label: 'Payout Method', value: 'USDC via smart contract' }
       ],
       pfpStaticDetails: [
+        { label: 'Risk Category', value: 'Low Risk' },
+        { label: 'Step Type', value: '2-Step' },
         { label: 'Funded Split', value: '80% Fixed' },
         { label: 'Trading Duration', value: 'Unlimited' },
         { label: 'Consistency Rule', value: 'No' },
@@ -603,9 +863,15 @@
         { label: 'Platform', value: 'cTrader' },
         { label: 'Payout Method', value: 'USDC via smart contract' }
       ],
+      pfpPriceLabels: [
+        { key: 'accessFeeLabel', value: 'Access Fee', description: 'One-time fee to access and start the prop firm challenge' },
+        { key: 'initialFeeLabel', value: 'Initial Fee', description: 'Initial upfront payment required to begin' },
+        { key: 'fundedFeeLabel', value: 'After Evaluation Funded Fee From Profit', description: 'Fee deducted from your first profit payout after successfully passing the evaluation' }
+      ],
       coupons: [
         { code: 'MOZO10', reward: '10% OFF' },
-        { code: 'MOZO20', reward: '20% OFF' }
+        { code: 'MOZO20', reward: '20% OFF' },
+        { code: 'WELCOME25', reward: '25% OFF' }
       ],
       prohibited: [
         '❌ High-Frequency Trading (HFT) bots',
@@ -617,158 +883,23 @@
       ]
     };
 
-    // ═══════════════════════════════════════════════════════════
-    // App Data Store (populated from sheet or defaults)
-    // ═══════════════════════════════════════════════════════════
-
-    var appData = {};
-
-    function mergeWithDefaults(sheetData) {
-      var data = {};
-
-      // Classic Prices: account_size → price
-      data.classicPrices = {};
-      if (sheetData.classicPrices && sheetData.classicPrices.length) {
-        sheetData.classicPrices.forEach(function (row) {
-          data.classicPrices[String(row.account_size)] = Number(row.price) || 0;
-        });
-      }
-      if (Object.keys(data.classicPrices).length === 0) {
-        data.classicPrices = DEFAULTS.classicPrices;
-      }
-
-      // PFP Fees 1-Step: account_size → access_fee & deduction
-      data.pfpAccessFees1Step = {};
-      data.pfpDeductions1Step = {};
-      if (sheetData.pfpFees1Step && sheetData.pfpFees1Step.length) {
-        sheetData.pfpFees1Step.forEach(function (row) {
-          var size = String(row.account_size);
-          data.pfpAccessFees1Step[size] = Number(row.access_fee) || 0;
-          data.pfpDeductions1Step[size] = Number(row.deduction) || 0;
-        });
-      }
-      if (Object.keys(data.pfpAccessFees1Step).length === 0) {
-        data.pfpAccessFees1Step = DEFAULTS.pfpAccessFees1Step;
-        data.pfpDeductions1Step = DEFAULTS.pfpDeductions1Step;
-      }
-
-      // PFP Fees 2-Step: account_size → access_fee & deduction
-      data.pfpAccessFees2Step = {};
-      data.pfpDeductions2Step = {};
-      if (sheetData.pfpFees2Step && sheetData.pfpFees2Step.length) {
-        sheetData.pfpFees2Step.forEach(function (row) {
-          var size = String(row.account_size);
-          data.pfpAccessFees2Step[size] = Number(row.access_fee) || 0;
-          data.pfpDeductions2Step[size] = Number(row.deduction) || 0;
-        });
-      }
-      if (Object.keys(data.pfpAccessFees2Step).length === 0) {
-        data.pfpAccessFees2Step = DEFAULTS.pfpAccessFees2Step;
-        data.pfpDeductions2Step = DEFAULTS.pfpDeductions2Step;
-      }
-
-      // PFP Risk Data
-      data.pfpRiskData = {};
-      if (sheetData.pfpRiskData && sheetData.pfpRiskData.length) {
-        sheetData.pfpRiskData.forEach(function (row) {
-          data.pfpRiskData[row.risk_key] = {
-            label: row.label,
-            dailyLoss: row.daily_loss,
-            maxLoss: row.max_loss,
-            drawdown: row.drawdown,
-            leverage: row.leverage,
-            stopLoss: row.stop_loss,
-            fee: row.fee
-          };
-        });
-      }
-      if (Object.keys(data.pfpRiskData).length === 0) {
-        data.pfpRiskData = DEFAULTS.pfpRiskData;
-      }
-
-      // PFP Step Data
-      data.pfpStepData = {};
-      if (sheetData.pfpStepData && sheetData.pfpStepData.length) {
-        sheetData.pfpStepData.forEach(function (row) {
-          data.pfpStepData[row.step_key] = {
-            label: row.step_label,
-            target1: row.target1,
-            target1Label: row.target1_label,
-            target2: row.target2,
-            minDays: row.min_days
-          };
-        });
-      }
-      if (Object.keys(data.pfpStepData).length === 0) {
-        data.pfpStepData = DEFAULTS.pfpStepData;
-      }
-
-      // Instant Levels
-      data.instantLevels = {};
-      if (sheetData.instantLevels && sheetData.instantLevels.length) {
-        sheetData.instantLevels.forEach(function (row) {
-          data.instantLevels[String(row.level)] = {
-            balance: Number(row.balance) || 0,
-            upgrade: Number(row.upgrade_fee) || 0,
-            nextLabel: row.next_label
-          };
-        });
-      }
-      if (Object.keys(data.instantLevels).length === 0) {
-        data.instantLevels = DEFAULTS.instantLevels;
-      }
-
-      // Detail arrays (use sheet data if available, else defaults)
-      data.classicDetails = (sheetData.classicDetails && sheetData.classicDetails.length)
-        ? sheetData.classicDetails : DEFAULTS.classicDetails;
-      data.instantDetails = (sheetData.instantDetails && sheetData.instantDetails.length)
-        ? sheetData.instantDetails : DEFAULTS.instantDetails;
-      data.coupons = (sheetData.coupons && sheetData.coupons.length)
-        ? sheetData.coupons : DEFAULTS.coupons;
-      data.prohibited = (sheetData.prohibited && sheetData.prohibited.length)
-        ? sheetData.prohibited : DEFAULTS.prohibited;
-
-      // PFP static details
-      data.pfpStaticDetails = (sheetData.pfpDetails && sheetData.pfpDetails.length)
-        ? sheetData.pfpDetails : DEFAULTS.pfpStaticDetails;
-
-      return data;
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // Loading Indicator
-    // ═══════════════════════════════════════════════════════════
-
-    var pfLoading = document.getElementById('pfLoading');
-
-    function showLoading() {
-      if (pfLoading) pfLoading.classList.remove('hidden');
-    }
-
-    function hideLoading() {
-      if (pfLoading) pfLoading.classList.add('hidden');
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // Fetch from Google Sheets API
-    // ═══════════════════════════════════════════════════════════
-
-    async function loadSheetData() {
-      if (!SHEETS_API_URL) {
-        console.warn('⚠️ No SHEETS_API_URL configured, using defaults');
-        appData = mergeWithDefaults({});
+    async function loadPropFirmData() {
+      // Check localStorage cache first (prefetched from homepage)
+      var cachedData = loadFromCache();
+      if (cachedData) {
+        // Merge cached data over defaults so missing fields (e.g. classicBeePrices) fall back gracefully
+        appData = Object.assign({}, DEFAULT_SEED, cachedData);
         return;
       }
+
+      // Fetch from our own MongoDB-backed API
       try {
-        var res = await fetch(SHEETS_API_URL);
+        var res = await fetch('/api/prop-firm-data');
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        var raw = await res.json();
-        if (raw.error) throw new Error(raw.error);
-        appData = mergeWithDefaults(raw);
-        console.log('✅ Prop firm data loaded from Google Sheets');
+        var data = await res.json();
+        appData = Object.assign({}, DEFAULT_SEED, data);
       } catch (e) {
-        console.warn('⚠️ Could not load from Google Sheets, using defaults:', e.message);
-        appData = mergeWithDefaults({});
+        appData = DEFAULT_SEED;
       }
     }
 
@@ -862,64 +993,181 @@
 
     function initUI() {
 
-      // ── Populate dynamic tables ─────────────────────────────
-      populateTable('classicDetailsBody', appData.classicDetails);
-      populateTable('instantDetailsBody', appData.instantDetails);
-      updatePfpStaticDetails(appData.pfpStaticDetails);
-
-      // ── Coupons ─────────────────────────────────────────────
-      populateCoupons(appData.coupons);
-
-      // ── Prohibited ──────────────────────────────────────────
-      populateProhibited(appData.prohibited);
-
-      // ── Price Data — 2-Step Classic ─────────────────────────
+      // ── Get all element references first (before clearing DOM) ─
       var classicSelect = document.getElementById('classicSize');
       var classicPrice = document.getElementById('classicPrice');
 
-      if (classicSelect && classicPrice) {
-        function updateClassicPrice() {
-          var val = classicSelect.value;
-          var price = appData.classicPrices[val] || 0;
-          classicPrice.textContent = '$' + price.toLocaleString();
-        }
-        classicSelect.addEventListener('change', updateClassicPrice);
-        updateClassicPrice();
-      }
-
-      // ── Price Data — Pay From Profits ───────────────────────
       var pfpSize = document.getElementById('pfpSize');
       var pfpStep = document.getElementById('pfpStep');
       var pfpTotalFee = document.getElementById('pfpTotalFee');
+      var pfpUpfront = document.getElementById('pfpUpfront');
       var pfpDeduction = document.getElementById('pfpDeduction');
-      function updatePfpPrices() {
-        if (!pfpSize || !pfpStep || !pfpTotalFee || !pfpDeduction) return;
-        var sizeVal = pfpSize.value;
-        var stepKey = pfpStep.value;
-        var accessFees = stepKey === '1step' ? appData.pfpAccessFees1Step : appData.pfpAccessFees2Step;
-        var deductions = stepKey === '1step' ? appData.pfpDeductions1Step : appData.pfpDeductions2Step;
-        pfpTotalFee.textContent = '$' + (accessFees[sizeVal] || 0).toLocaleString();
-        pfpDeduction.textContent = '$' + (deductions[sizeVal] || 0).toLocaleString();
-      }
-
-      // ── Step Type — Pay From Profits ────────────────────────
       var pfpStepLabel = document.getElementById('pfpStepLabel');
       var pfpTarget1 = document.getElementById('pfpTarget1');
       var pfpTarget1Label = document.getElementById('pfpTarget1Label');
       var pfpTarget2Row = document.getElementById('pfpTarget2Row');
       var pfpTarget2 = document.getElementById('pfpTarget2');
       var pfpMinDays = document.getElementById('pfpMinDays');
+      var pfpRisk = document.getElementById('pfpRisk');
+      var pfpRiskLabel = document.getElementById('pfpRiskLabel');
+      var pfpDailyLoss = document.getElementById('pfpDailyLoss');
+      var pfpMaxLoss = document.getElementById('pfpMaxLoss');
+      var pfpDrawdown = document.getElementById('pfpDrawdown');
+      var pfpLeverage = document.getElementById('pfpLeverage');
+      var pfpStopLoss = document.getElementById('pfpStopLoss');
+      var pfpFee = document.getElementById('pfpFee');
 
+      var instantLevel = document.getElementById('instantLevel');
+      var instantLevelLabel = document.getElementById('instantLevelLabel');
+      var instantUpgradeFee = document.getElementById('instantUpgradeFee');
+      var instantNewBalance = document.getElementById('instantNewBalance');
+      var instantBuyPrice = document.getElementById('instantBuyPrice');
+
+      // ── Clear static HTML defaults ──────────────────────────
+      // Classic & Instant tables: remove all rows (built fresh by populateTable)
+      document.getElementById('classicDetailsBody').innerHTML = '';
+      document.getElementById('instantDetailsBody').innerHTML = '';
+      // PFP table: clear value cells only — rows must stay for updatePfpStaticDetails
+      document.getElementById('pfpDetailsBody').querySelectorAll('.pf-dt-value').forEach(function (cell) {
+        cell.textContent = '';
+      });
+      document.querySelectorAll('.pf-coupon-list').forEach(function (el) { el.innerHTML = ''; });
+      document.querySelectorAll('.pf-prohibited-grid').forEach(function (el) { el.innerHTML = ''; });
+
+      // ── Populate dynamic tables (only if data exists) ────────
+      if (appData.classicDetails && appData.classicDetails.length) {
+        populateTable('classicDetailsBody', appData.classicDetails);
+      }
+      if (appData.instantDetails && appData.instantDetails.length) {
+        populateTable('instantDetailsBody', appData.instantDetails);
+      }
+      if (appData.pfpStaticDetails && appData.pfpStaticDetails.length) {
+        updatePfpStaticDetails(appData.pfpStaticDetails);
+      }
+
+      // ── PFP Price Box Labels & Info Tooltips ─────────────────
+      var pfpLabels = appData.pfpPriceLabels || [];
+      pfpLabels.forEach(function (item) {
+        var el = document.getElementById('pfp' + item.key.charAt(0).toUpperCase() + item.key.slice(1));
+        if (el) el.textContent = item.value;
+        var tooltip = document.getElementById('tooltip-' + item.key);
+        if (tooltip && item.description) {
+          tooltip.textContent = item.description;
+        }
+      });
+
+      // Info button tooltip toggle
+      document.querySelectorAll('.pf-info-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var tooltip = this.nextElementSibling;
+          if (tooltip && tooltip.classList.contains('pf-tooltip')) {
+            document.querySelectorAll('.pf-tooltip.show').forEach(function (t) {
+              if (t !== tooltip) t.classList.remove('show');
+            });
+            tooltip.classList.toggle('show');
+          }
+        });
+      });
+
+      // Close tooltips on click outside
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.pf-tooltip.show').forEach(function (t) {
+          t.classList.remove('show');
+        });
+      });
+
+      // ── Coupons ─────────────────────────────────────────────
+      if (appData.coupons && appData.coupons.length) {
+        populateCoupons(appData.coupons);
+      }
+
+      // ── Prohibited ──────────────────────────────────────────
+      if (appData.prohibited && appData.prohibited.length) {
+        populateProhibited(appData.prohibited);
+      }
+
+      // ── Price Data — 2-Step Classic ─────────────────────────
+      var classicBee = document.getElementById('classicBee');
+
+      var classicWelcomePrice = document.getElementById('classicWelcomePrice');
+
+      if (classicSelect && classicPrice && classicBee) {
+        function updateClassicPrice() {
+          var sizeVal = classicSelect.value;
+          var beeKey = classicBee.value;
+          var beePrices = appData.classicBeePrices || {};
+          var sizePrices = beePrices[sizeVal];
+          var basePrice = 0;
+          if (sizePrices && sizePrices[beeKey] !== undefined) {
+            basePrice = Number(sizePrices[beeKey]);
+            classicPrice.textContent = '$' + basePrice.toLocaleString();
+          } else {
+            classicPrice.textContent = '—';
+          }
+          // Update WELCOME25 discount price (25% off)
+          if (basePrice > 0) {
+            var discPrice = Math.round(basePrice * 75 / 100);
+            if (classicWelcomePrice) {
+              classicWelcomePrice.textContent = '$' + discPrice.toLocaleString();
+            }
+          } else {
+            if (classicWelcomePrice) {
+              classicWelcomePrice.textContent = '';
+            }
+          }
+        }
+        classicSelect.addEventListener('change', updateClassicPrice);
+        classicBee.addEventListener('change', updateClassicPrice);
+        updateClassicPrice();
+      }
+
+      // ── Price Data — Pay From Profits ───────────────────────
+      function updatePfpPrices() {
+        if (!pfpSize || !pfpStep || !pfpTotalFee || !pfpUpfront || !pfpDeduction) return;
+        var sizeVal = pfpSize.value;
+        var stepKey = pfpStep.value;
+        var riskKey = pfpRisk ? pfpRisk.value : 'low';
+        var accessFees = stepKey === '1step' ? (appData.pfpAccessFees1Step || {}) : (appData.pfpAccessFees2Step || {});
+        var riskData = (appData.pfpRiskData || {})[riskKey] || {};
+
+        // Access Fee
+        if (accessFees[sizeVal] !== undefined) {
+          pfpTotalFee.textContent = '$' + Number(accessFees[sizeVal]).toLocaleString();
+        } else {
+          pfpTotalFee.textContent = '—';
+        }
+
+        // After Evaluation Funded Fee = fundedFeePct% of capital
+        var fundedFeePct = Number(riskData.fundedFeePct);
+        if (fundedFeePct > 0 && sizeVal) {
+          var deductionAmount = Math.round(Number(sizeVal) * fundedFeePct / 100);
+          pfpDeduction.textContent = '$' + deductionAmount.toLocaleString();
+          // Upfront = upfrontPct% of the funded fee
+          var upfrontPct = Number(riskData.upfrontPct) || 0;
+          if (upfrontPct > 0) {
+            var upfrontAmount = Math.round(deductionAmount * upfrontPct / 100);
+            pfpUpfront.textContent = '$' + upfrontAmount.toLocaleString();
+          } else {
+            pfpUpfront.textContent = '—';
+          }
+        } else {
+          pfpDeduction.textContent = '—';
+          pfpUpfront.textContent = '—';
+        }
+      }
+
+      // ── Step Type — Pay From Profits ────────────────────────
       function updatePfpStep() {
         var key = pfpStep.value;
-        var data = appData.pfpStepData[key];
-        if (data) {
-          pfpStepLabel.textContent = data.label;
-          pfpTarget1.textContent = data.target1;
-          pfpTarget1Label.textContent = data.target1Label;
-          pfpTarget2.textContent = data.target2;
+        var stepData = (appData.pfpStepData || {})[key];
+        if (stepData) {
+          pfpStepLabel.textContent = stepData.label;
+          pfpTarget1.textContent = stepData.target1;
+          pfpTarget1Label.textContent = stepData.target1Label;
+          pfpTarget2.textContent = stepData.target2;
           pfpTarget2Row.style.display = key === '1step' ? 'none' : '';
-          pfpMinDays.textContent = data.minDays;
+          pfpMinDays.textContent = stepData.minDays;
         }
         updatePfpPrices();
       }
@@ -932,18 +1180,9 @@
       }
 
       // ── Risk Categories — Pay From Profits ──────────────────
-      var pfpRisk = document.getElementById('pfpRisk');
-      var pfpRiskLabel = document.getElementById('pfpRiskLabel');
-      var pfpDailyLoss = document.getElementById('pfpDailyLoss');
-      var pfpMaxLoss = document.getElementById('pfpMaxLoss');
-      var pfpDrawdown = document.getElementById('pfpDrawdown');
-      var pfpLeverage = document.getElementById('pfpLeverage');
-      var pfpStopLoss = document.getElementById('pfpStopLoss');
-      var pfpFee = document.getElementById('pfpFee');
-
       function updatePfpRisk() {
         var key = pfpRisk.value;
-        var data = appData.pfpRiskData[key];
+        var data = (appData.pfpRiskData || {})[key];
         if (data) {
           pfpRiskLabel.textContent = data.label;
           pfpDailyLoss.textContent = data.dailyLoss;
@@ -953,6 +1192,7 @@
           pfpStopLoss.textContent = data.stopLoss;
           pfpFee.textContent = data.fee;
         }
+        updatePfpPrices();
       }
 
       if (pfpRisk && pfpRiskLabel) {
@@ -961,19 +1201,20 @@
       }
 
       // ── Price Data — Instant Growth (Golden Tower) ──────────
-      var instantLevel = document.getElementById('instantLevel');
-      var instantLevelLabel = document.getElementById('instantLevelLabel');
-      var instantUpgradeFee = document.getElementById('instantUpgradeFee');
-      var instantNewBalance = document.getElementById('instantNewBalance');
-
-      if (instantLevel && instantLevelLabel && instantUpgradeFee && instantNewBalance) {
+      if (instantLevel && instantLevelLabel && instantUpgradeFee && instantNewBalance && instantBuyPrice) {
         function updateInstant() {
           var val = instantLevel.value;
-          var data = appData.instantLevels[val];
+          var data = (appData.instantLevels || {})[val];
           if (data) {
             instantLevelLabel.textContent = data.nextLabel;
-            instantUpgradeFee.textContent = data.upgrade === 0 ? '—' : '$' + data.upgrade.toLocaleString();
-            instantNewBalance.textContent = '$' + data.balance.toLocaleString();
+            instantUpgradeFee.textContent = data.upgrade === 0 ? '—' : '$' + Number(data.upgrade).toLocaleString();
+            instantNewBalance.textContent = '$' + Number(data.balance).toLocaleString();
+            instantBuyPrice.textContent = data.buyPrice > 0 ? '$' + Number(data.buyPrice).toLocaleString() : '—';
+          } else {
+            instantLevelLabel.textContent = '—';
+            instantUpgradeFee.textContent = '—';
+            instantNewBalance.textContent = '—';
+            instantBuyPrice.textContent = '—';
           }
         }
         instantLevel.addEventListener('change', updateInstant);
@@ -985,7 +1226,8 @@
       var panels = {
         classic: document.getElementById('pfpanel-classic'),
         pfp: document.getElementById('pfpanel-pfp'),
-        instant: document.getElementById('pfpanel-instant')
+        instant: document.getElementById('pfpanel-instant'),
+        abook: document.getElementById('pfpanel-abook')
       };
 
       tabs.forEach(function (tab) {
@@ -1036,8 +1278,7 @@
     // ═══════════════════════════════════════════════════════════
 
     document.addEventListener('DOMContentLoaded', async function () {
-      await fetchConfig();
-      await loadSheetData();
+      await loadPropFirmData();
       initUI();
       hideLoading();
     });

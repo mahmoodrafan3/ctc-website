@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { connect, getDb } = require('./lib/db');
+const { connect, getDb, getDbWithRetry } = require('./lib/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,7 +36,7 @@ function requireAdmin(req, res, next) {
 // ── Public API: Serve prop firm data from MongoDB ─────────────────
 app.get('/api/prop-firm-data', async (req, res) => {
   try {
-    const db = getDb();
+    const db = await getDbWithRetry();
     if (!db) {
       return res.status(503).json({ error: 'Database not available' });
     }
@@ -67,7 +67,7 @@ app.post('/api/admin/login', express.json(), (req, res) => {
 
 app.get('/api/admin/prop-firm-data', requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
+    const db = await getDbWithRetry();
     if (!db) return res.status(503).json({ error: 'Database not available' });
     const doc = await db.collection('propFirmData').findOne({ _key: 'v1' });
     if (!doc || !doc.data) return res.status(404).json({ error: 'No data found' });
@@ -79,7 +79,7 @@ app.get('/api/admin/prop-firm-data', requireAdmin, async (req, res) => {
 
 app.post('/api/admin/prop-firm-data', requireAdmin, express.json(), async (req, res) => {
   try {
-    const db = getDb();
+    const db = await getDbWithRetry();
     if (!db) return res.status(503).json({ error: 'Database not available' });
     const data = req.body;
 

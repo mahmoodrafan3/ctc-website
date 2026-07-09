@@ -2633,7 +2633,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: var(--white);
   transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 

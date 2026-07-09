@@ -706,6 +706,7 @@
           </a>
         </div>
       </div>
+
     </div>
   </section>
 
@@ -748,6 +749,32 @@
     <img class="lightbox-image" id="lightboxImage" src="" alt="Full-screen chart" />
     <span class="lightbox-label" id="lightboxLabel"></span>
   </div>
+
+  <!-- Prefetch Prop Firm Data (cache for prop-firm page) -->
+  <script>
+    // Prefetch prop firm data from MongoDB-backed API in the background
+    // so it's instantly available when the user navigates to /prop-firm.
+    async function prefetchPfData() {
+      try {
+        var res = await fetch('/api/prop-firm-data');
+        if (!res.ok) return;
+        var data = await res.json();
+        localStorage.setItem('pfDataCache', JSON.stringify({
+          timestamp: Date.now(),
+          data: data
+        }));
+        console.log('✅ Prop firm data prefetched and cached from MongoDB');
+      } catch (e) {
+        // Silently fail — prop-firm page will fetch on its own
+      }
+    }
+    // Fire-and-forget; does not block page rendering
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(prefetchPfData);
+    } else {
+      setTimeout(prefetchPfData, 2000);
+    }
+  </script>
 
   <!-- Side Drawer Script -->
   <script>

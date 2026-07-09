@@ -1513,6 +1513,66 @@ code {
   .rule-badge-group {
     flex-direction: column;
   }
+
+  .session-boxes {
+    flex-direction: column;
+  }
+
+  .candle-img {
+    max-width: 220px;
+    height: 160px;
+  }
+
+  .rule-card {
+    padding: 22px;
+  }
+
+  .rule-title {
+    font-size: 1.1rem;
+  }
+
+  .rule-desc {
+    font-size: 0.88rem;
+  }
+
+  .rule-entry-details {
+    padding: 12px 14px;
+  }
+
+  .ed-label {
+    min-width: 70px;
+    font-size: 0.65rem;
+  }
+
+  .ed-value {
+    font-size: 0.75rem;
+  }
+
+  .entry-detail-row {
+    gap: 8px;
+  }
+
+  .trade-summary {
+    padding: 14px;
+  }
+
+  .mech-step {
+    gap: 16px;
+  }
+
+  .mech-number {
+    width: 56px;
+    height: 56px;
+    font-size: 1rem;
+  }
+
+  .mech-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .mech-content p {
+    font-size: 0.88rem;
+  }
 }
 
 /* ============================================================
@@ -1812,6 +1872,48 @@ code {
 
   .section {
     padding: 60px 0;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    text-align: center;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .footer-disclaimer {
+    text-align: center;
+  }
+
+  .overview-para {
+    font-size: 0.95rem;
+  }
+
+  .params-table {
+    font-size: 0.78rem;
+  }
+
+  .params-table th,
+  .params-table td {
+    padding: 10px 12px;
+  }
+
+  .hero-disclaimer {
+    font-size: 0.75rem;
+    padding: 10px 14px;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
   }
 }
 
@@ -2235,6 +2337,78 @@ code {
 /* ============================================================
    PROP FIRM — PRICE & COUPON CARD
    ============================================================ */
+
+/* Price label row with info button */
+.pf-price-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+}
+
+/* Info button (ⓘ) */
+.pf-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: color 0.2s;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.pf-info-btn:hover {
+  color: var(--gray-700);
+}
+
+/* Tooltip popup */
+.pf-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-900);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: normal;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  line-height: 1.5;
+  max-width: 260px;
+  min-width: 180px;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.pf-tooltip.show {
+  display: block;
+}
+
+.pf-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: var(--gray-900);
+}
+
 .pf-price-card {
   width: 260px;
   flex-shrink: 0;
@@ -2280,6 +2454,32 @@ code {
   gap: 10px;
 }
 
+.pf-coupon-discount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  gap: 8px;
+}
+
+.pf-coupon-discount-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  line-height: 1.3;
+}
+
+.pf-coupon-discount-price {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--green);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+
 .pf-coupon-heading {
   font-size: 0.72rem;
   font-weight: 600;
@@ -2316,6 +2516,14 @@ code {
   font-weight: 700;
   color: var(--gray-900);
   letter-spacing: 0.03em;
+}
+
+.pf-coupon-price {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--green);
+  font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
 .pf-coupon-reward {
@@ -2466,6 +2674,613 @@ code {
 }
 
 /* ============================================================
+   PROP FIRM — AADS TAB
+   ============================================================ */
+
+.pf-aads-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+
+.pf-aads-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 16px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.pf-aads-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+.pf-aads-subtitle {
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  margin-bottom: 20px;
+}
+
+.pf-aads-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  background: var(--gray-900);
+  color: var(--white);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pf-aads-cta:hover {
+  background: var(--black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+.pf-aads-cta svg {
+  transition: transform 0.2s;
+}
+
+.pf-aads-cta:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* Sections shared styles */
+.pf-aads-section {
+  max-width: 780px;
+  margin: 0 auto 32px;
+}
+
+.pf-aads-desc {
+  font-size: 0.92rem;
+  color: var(--gray-600);
+  line-height: 1.8;
+}
+
+.pf-aads-desc strong {
+  color: var(--gray-900);
+}
+
+.pf-aads-flow-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Routing Flow Grid */
+.pf-aads-flow {
+  max-width: 780px;
+  margin: 0 auto 36px;
+}
+
+.pf-aads-flow-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.pf-aads-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.pf-aads-step:hover {
+  border-color: var(--gray-400);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.pf-aads-step-trigger {
+  border-left: 3px solid #f59e0b;
+}
+
+.pf-aads-step-warn {
+  border-left: 3px solid #ef4444;
+}
+
+.pf-aads-step-ok {
+  border-left: 3px solid var(--green);
+}
+
+.pf-aads-step-num {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-200);
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  flex-shrink: 0;
+}
+
+.pf-aads-step-trigger .pf-aads-step-num {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pf-aads-step-warn .pf-aads-step-num {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.pf-aads-step-ok .pf-aads-step-num {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.pf-aads-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pf-aads-step-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pf-aads-step-desc {
+  font-size: 0.82rem;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.pf-aads-step-desc strong {
+  color: var(--gray-900);
+}
+
+/* Key Notes */
+.pf-aads-notes {
+  max-width: 780px;
+  margin: 0 auto 36px;
+}
+
+.pf-aads-notes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.pf-aads-note-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200);
+  transition: all 0.2s;
+}
+
+.pf-aads-note-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+}
+
+.pf-aads-note-switch {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.pf-aads-note-loss {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.pf-aads-note-coin {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.pf-aads-note-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.04);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.pf-aads-note-switch .pf-aads-note-icon {
+  color: #d97706;
+  background: #fde68a;
+}
+
+.pf-aads-note-loss .pf-aads-note-icon {
+  color: #dc2626;
+  background: #fecaca;
+}
+
+.pf-aads-note-coin .pf-aads-note-icon {
+  color: var(--green);
+  background: #bbf7d0;
+}
+
+.pf-aads-note-body strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.pf-aads-note-body p {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.pf-aads-note-body p strong {
+  display: inline;
+  font-size: inherit;
+  margin-bottom: 0;
+}
+
+/* Auto Profit Realization */
+.pf-aads-auto {
+  max-width: 780px;
+  margin: 0 auto 36px;
+}
+
+.pf-aads-auto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pf-aads-auto-card {
+  padding: 20px 22px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.pf-aads-auto-card:hover {
+  border-color: var(--gray-400);
+  transform: translateY(-1px);
+}
+
+.pf-aads-auto-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  background: var(--gray-200);
+  color: var(--gray-700);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.pf-aads-auto-card p {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.pf-aads-auto-card p strong {
+  color: var(--gray-900);
+}
+
+/* Smart Contract Payouts */
+.pf-aads-payout {
+  max-width: 780px;
+  margin: 0 auto 36px;
+  padding: 24px 28px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-md);
+}
+
+.pf-aads-payout .pf-aads-desc strong {
+  color: #075985;
+}
+
+/* $5,000 Example */
+.pf-aads-example {
+  max-width: 780px;
+  margin: 0 auto 36px;
+}
+
+.pf-aads-example-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pf-aads-example-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.pf-aads-example-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.pf-aads-example-profit {
+  border-color: #bbf7d0;
+}
+
+.pf-aads-example-drawdown {
+  border-color: #fecaca;
+}
+
+.pf-aads-example-recovery {
+  border-color: #bfdbfe;
+}
+
+.pf-aads-example-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gray-100);
+  background: var(--gray-50);
+}
+
+.pf-aads-example-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.pf-aads-example-amount {
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+
+.pf-green {
+  color: var(--green);
+}
+
+.pf-red {
+  color: var(--red);
+}
+
+.pf-aads-example-detail {
+  padding: 16px 18px;
+}
+
+.pf-aads-example-detail p {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.pf-aads-example-detail p strong {
+  color: var(--gray-900);
+}
+
+/* Truth Protocol */
+.pf-aads-truth {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.pf-aads-truth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pf-aads-truth-card {
+  padding: 24px 22px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.pf-aads-truth-card:hover {
+  border-color: var(--gray-400);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+
+.pf-aads-truth-card svg {
+  color: var(--blue);
+  margin-bottom: 12px;
+}
+
+.pf-aads-truth-card strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.pf-aads-truth-card p {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Trade-by-Trade Walkthrough */
+.pf-aads-trades {
+  max-width: 780px;
+  margin: 28px auto 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pf-aads-trades-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.pf-aads-trades-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.pf-aads-trades-table thead {
+  background: var(--gray-900);
+  color: var(--white);
+}
+
+.pf-aads-trades-table th {
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+
+.pf-aads-trades-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+
+.pf-aads-trades-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pf-aads-trades-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.pf-aads-tr-trigger {
+  background: #fffbeb;
+}
+
+.pf-aads-tr-trigger:hover {
+  background: #fef3c7 !important;
+}
+
+.pf-aads-tr-recovery {
+  background: #f0fdf4;
+}
+
+.pf-aads-tr-recovery:hover {
+  background: #dcfce7 !important;
+}
+
+.pf-aads-trade-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--gray-700);
+}
+
+.pf-mono {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.pf-aads-exec-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.pf-aads-exec-a {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.pf-aads-exec-b {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pf-aads-status {
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.pf-aads-status-ok {
+  color: var(--green);
+}
+
+.pf-aads-status-warn {
+  color: #d97706;
+}
+
+.pf-aads-status-neutral {
+  color: var(--gray-500);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pf-aads-flow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-aads-auto-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-aads-example-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-aads-truth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-aads-example-head {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+}
+
+/* ============================================================
    PROP FIRM — RESPONSIVE
    ============================================================ */
 @media (max-width: 1024px) {    .pf-prohibited-grid {
@@ -2505,6 +3320,104 @@ code {
 
   .pf-prohibited-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pf-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .pf-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pf-firm-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .pf-panel-intro {
+    margin-bottom: 32px;
+  }
+
+  .pf-panel-title {
+    font-size: 1.35rem;
+  }
+
+  .pf-panel-desc {
+    font-size: 0.88rem;
+  }
+
+  .pf-selectors-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pf-selectors-row .pf-select-section {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .pf-aads-header {
+    margin-bottom: 24px;
+  }
+
+  .pf-aads-title {
+    font-size: 1.25rem;
+  }
+
+  .pf-aads-subtitle {
+    font-size: 0.88rem;
+  }
+
+  .pf-aads-section {
+    margin-bottom: 24px;
+  }
+
+  .pf-aads-step {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .pf-aads-step-num {
+    width: 30px;
+    height: 30px;
+    font-size: 0.72rem;
+  }
+
+  .pf-aads-step-desc {
+    font-size: 0.78rem;
+  }
+
+  .pf-aads-note-card {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .pf-aads-auto-card {
+    padding: 16px 18px;
+  }
+
+  .pf-aads-payout {
+    padding: 18px 20px;
+  }
+
+  .pf-aads-truth-card {
+    padding: 18px 16px;
+  }
+
+  .pf-aads-trades-table {
+    font-size: 0.75rem;
+  }
+
+  .pf-aads-trades-table th,
+  .pf-aads-trades-table td {
+    padding: 8px 10px;
   }
 }
 
@@ -2838,6 +3751,57 @@ code {
   .code-block code {
     font-size: 0.7rem;
   }
+
+  .code-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .code-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .code-panel-tag {
+    font-size: 0.65rem;
+  }
+
+  .code-panel-title {
+    font-size: 1.1rem;
+  }
+
+  .code-panel-desc {
+    font-size: 0.82rem;
+  }
+
+  .code-note {
+    font-size: 0.78rem;
+    padding: 12px 14px;
+  }
+
+  .st-subtab {
+    padding: 10px 16px;
+    font-size: 0.75rem;
+  }
+
+  .code-filename {
+    font-size: 0.78rem;
+  }
+
+  .code-sub-desc {
+    font-size: 0.75rem;
+  }
+
+  .btn-copy {
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+
+  .code-sub-header {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 /* ============================================================
@@ -3035,6 +3999,236 @@ code {
 
   .tj-coming-soon {
     padding: 40px 0;
+  }
+}
+
+/* ============================================================
+   EXTRA SMALL SCREENS (≤480px)
+   ============================================================ */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-badge {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+  }
+
+  .hero-stats-row {
+    gap: 8px;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .section-desc {
+    font-size: 0.9rem;
+  }
+
+  .section-tag {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+  }
+
+  .section {
+    padding: 40px 0;
+  }
+
+  .section-header {
+    margin-bottom: 36px;
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 0.82rem;
+  }
+
+  .overview-points li {
+    font-size: 0.88rem;
+    padding-left: 16px;
+  }
+
+  .bt-card {
+    padding: 20px;
+  }
+
+  .pf-tab {
+    padding: 12px 14px;
+    font-size: 0.75rem;
+  }
+
+  .pf-firm-name {
+    font-size: 1.15rem;
+  }
+
+  .pf-price-card {
+    padding: 18px;
+  }
+
+  .pf-price-value {
+    font-size: 1.6rem;
+  }
+
+  .pf-price-value[style*="font-size:1.5rem"] {
+    font-size: 1.2rem !important;
+  }
+
+  .pf-coupon-item {
+    padding: 8px 12px;
+  }
+
+  .pf-coupon-code {
+    font-size: 0.72rem;
+  }
+
+  .pf-coupon-reward {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+  }
+
+  .pf-price-cta {
+    padding: 12px 16px;
+    font-size: 0.82rem;
+  }
+
+  .pf-aads-note-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pf-aads-badge {
+    font-size: 0.68rem;
+    padding: 4px 12px;
+  }
+
+  .pf-aads-flow-title {
+    font-size: 1rem;
+  }
+
+  .pf-aads-step-desc {
+    font-size: 0.75rem;
+  }
+
+  .pf-aads-trades-title {
+    font-size: 0.85rem;
+  }
+
+  .pf-aads-trades-table {
+    font-size: 0.7rem;
+  }
+
+  .pf-aads-trades-table th,
+  .pf-aads-trades-table td {
+    padding: 6px 8px;
+  }
+
+  .pf-aads-cta {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+  }
+
+  .pf-disclaimer {
+    font-size: 0.75rem;
+    padding: 10px 14px;
+  }
+
+  .code-tab {
+    padding: 12px 14px;
+    font-size: 0.75rem;
+  }
+
+  .code-block {
+    padding: 12px;
+  }
+
+  .code-block code {
+    font-size: 0.65rem;
+  }
+
+  .tj-coming-soon-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 24px;
+  }
+
+  .tj-coming-soon-icon svg {
+    width: 44px;
+    height: 44px;
+  }
+
+  .tj-coming-soon-title {
+    font-size: 1.2rem;
+  }
+
+  .tj-coming-soon-desc {
+    font-size: 0.9rem;
+  }
+
+  .tj-feature-item {
+    padding: 12px 14px;
+    font-size: 0.82rem;
+  }
+
+  .rules-decision-bar {
+    gap: 4px;
+    padding: 12px;
+  }
+
+  .decision-step {
+    padding: 4px 8px;
+  }
+
+  .ds-label {
+    font-size: 0.65rem;
+  }
+
+  .ds-number {
+    width: 20px;
+    height: 20px;
+    font-size: 0.6rem;
+  }
+
+  .rule-step {
+    margin-bottom: 16px;
+  }
+
+  .rule-card {
+    padding: 16px;
+  }
+
+  .candle-group {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .candle-img {
+    max-width: 100%;
+    height: 140px;
+  }
+
+  .lightbox-overlay {
+    padding: 8px;
+  }
+
+  .lightbox-close {
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
   }
 }
 

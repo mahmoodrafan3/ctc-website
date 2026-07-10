@@ -42,7 +42,9 @@ try:
     print(f"📄 Full response:\n{resp.text}")
     if resp.status_code in (200, 201):
         data = resp.json()
-        if data.get("messages"):
+        if data.get("error"):
+            print(f"⚠️  API returned error in body: {data['error']}")
+        elif data.get("messages"):
             msg_id = data["messages"][0].get("id", "unknown")
             print(f"✅ WhatsApp API accepted — Message ID: {msg_id}")
             print(f"   Check your phone: {ALERT_PHONE}")

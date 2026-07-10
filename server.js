@@ -34,6 +34,15 @@ function requireAdmin(req, res, next) {
 }
 
 // ── Public API: Serve prop firm data from MongoDB ─────────────────
+// ── Cleanup: strip stale fields from data ──────────────────────
+const STALE_KEYS = ['pfpFundedPct1Step', 'pfpFundedPct2Step', 'pfpDeductions1Step', 'pfpDeductions2Step'];
+
+function stripStaleFields(data) {
+  if (!data || typeof data !== 'object') return data;
+  STALE_KEYS.forEach(function (key) { delete data[key]; });
+  return data;
+}
+
 app.get('/api/prop-firm-data', async (req, res) => {
   try {
     const db = await getDbWithRetry();
@@ -44,6 +53,8 @@ app.get('/api/prop-firm-data', async (req, res) => {
     if (!doc || !doc.data) {
       return res.status(404).json({ error: 'No data found' });
     }
+    // Strip stale fields from what we send to the frontend
+    stripStaleFields(doc.data);
     res.json(doc.data);
   } catch (err) {
     console.error('❌ Error fetching prop firm data:', err.message);
@@ -71,6 +82,8 @@ app.get('/api/admin/prop-firm-data', requireAdmin, async (req, res) => {
     if (!db) return res.status(503).json({ error: 'Database not available' });
     const doc = await db.collection('propFirmData').findOne({ _key: 'v1' });
     if (!doc || !doc.data) return res.status(404).json({ error: 'No data found' });
+    // Strip stale fields from what we send to the admin page
+    stripStaleFields(doc.data);
     res.json(doc.data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -83,8 +96,11 @@ app.post('/api/admin/prop-firm-data', requireAdmin, express.json(), async (req, 
     if (!db) return res.status(503).json({ error: 'Database not available' });
     const data = req.body;
 
-    // Load existing document and deep-merge so missing client fields are preserved
+    // Strip stale fields from both incoming and existing data so they're removed from DB permanently
+    stripStaleFields(data);
+
     const existing = await db.collection('propFirmData').findOne({ _key: 'v1' });
+    if (existing && existing.data) stripStaleFields(existing.data);
     const mergedData = existing && existing.data
       ? Object.assign({}, existing.data, data)
       : data;

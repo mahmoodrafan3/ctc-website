@@ -163,7 +163,7 @@
     }
     .section-card-header.collapsed .toggle-icon { transform: rotate(-90deg); }
     .section-card-body {
-      padding: 20px; display: block;
+      padding: 20px; display: block; overflow-x: auto;
     }
     .section-card-header.collapsed + .section-card-body { display: none; }
 
@@ -191,6 +191,7 @@
     }
     .form-group textarea { resize: vertical; min-height: 60px; }
 
+    .table-wrap { overflow-x: auto; }
     .data-table {
       width: 100%; border-collapse: collapse; font-size: 0.82rem;
     }
@@ -230,8 +231,9 @@
       display: flex; gap: 8px; align-items: flex-end;
       padding: 8px 12px; background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius);
+      flex-wrap: wrap;
     }
-    .object-row .form-group { flex: 1; }
+    .object-row .form-group { flex: 1 1 120px; min-width: 100px; }
     .object-row .remove-btn {
       padding: 6px 10px; background: none; border: 1px solid transparent;
       color: var(--red); cursor: pointer; font-size: 0.8rem;
@@ -413,45 +415,21 @@
         });
       }
 
-      // Migrate old PFP dollar fees to percentages
+      // Migrate old PFP percentage fees to dollar values
       ['pfpAccessFees1Step', 'pfpAccessFees2Step'].forEach(function (key) {
         var obj = data[key];
         if (obj) {
           Object.keys(obj).forEach(function (size) {
             var val = Number(obj[size]);
-            // If value > 5, it's likely a dollar amount not a percentage — convert
-            if (val > 5) {
-              obj[size] = Math.round(val / Number(size) * 100 * 100) / 100;
+            // If value < 5, it's likely a percentage (e.g. 0.4%) — convert to dollar
+            if (val < 5 && val > 0) {
+              obj[size] = Math.round(Number(size) * val / 100);
             }
           });
         }
       });
 
-      // Migrate old PFP deduction dollar values to funded fee percentages
-      ['pfpDeductions1Step', 'pfpDeductions2Step'].forEach(function (key) {
-        var fundedKey = key === 'pfpDeductions1Step' ? 'pfpFundedPct1Step' : 'pfpFundedPct2Step';
-        // Only migrate if funded field doesn't exist yet and deductions exist
-        if (!data[fundedKey] && data[key]) {
-          data[fundedKey] = {};
-          Object.keys(data[key]).forEach(function (size) {
-            var val = Number(data[key][size]);
-            var pct = val > 0 && Number(size) > 0 ? Math.round(val / Number(size) * 100 * 100) / 100 : 2;
-            data[fundedKey][size] = pct;
-          });
-        }
-      });
-
-      // Ensure funded fee pcts exist if access fees exist but funded doesn't
-      ['1Step', '2Step'].forEach(function (step) {
-        var accessKey = 'pfpAccessFees' + step;
-        var fundedKey = 'pfpFundedPct' + step;
-        if (data[accessKey] && !data[fundedKey]) {
-          data[fundedKey] = {};
-          Object.keys(data[accessKey]).forEach(function (size) {
-            data[fundedKey][size] = 2;
-          });
-        }
-      });
+      // Migrate old PFP deduction fields — no longer needed (funded fee from risk data)
 
       return data;
     }
@@ -556,36 +534,32 @@
       body.insertAdjacentHTML('beforeend', section('s-bee', 'Classic Bee Prices', Object.keys(appData.classicBeePrices || {}).length + ' sizes', beePricesHtml));
 
       // ── PFP Fees 1-Step ──────────────────────────────
-      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee (%)', 'Funded Fee (%)'], [
+      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee ($)'], [
         { key: 'key', label: 'Size' },
-        { key: 'access', label: 'Access Fee %' },
-        { key: 'funded', label: 'Funded Fee %' }
+        { key: 'access', label: 'Access Fee $' }
       ], Object.keys(appData.pfpAccessFees1Step).map(function (k) {
-        return { key: k, access: appData.pfpAccessFees1Step[k], funded: appData.pfpFundedPct1Step && appData.pfpFundedPct1Step[k] !== undefined ? appData.pfpFundedPct1Step[k] : 2 };
+        return { key: k, access: appData.pfpAccessFees1Step[k] };
       }), function (rows) {
-        var fees = {}, funded = {};
+        var fees = {};
         rows.forEach(function (r) {
-          if (r.key) { fees[r.key] = Number(r.access) || 0; funded[r.key] = Number(r.funded) || 0; }
+          if (r.key) { fees[r.key] = Number(r.access) || 0; }
         });
         appData.pfpAccessFees1Step = fees;
-        appData.pfpFundedPct1Step = funded;
       });
       body.insertAdjacentHTML('beforeend', section('s-pfp1', 'PFP Fees — 1-Step', Object.keys(appData.pfpAccessFees1Step).length + ' sizes', pfp1Html));
 
       // ── PFP Fees 2-Step ──────────────────────────────
-      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee (%)', 'Funded Fee (%)'], [
+      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee ($)'], [
         { key: 'key', label: 'Size' },
-        { key: 'access', label: 'Access Fee %' },
-        { key: 'funded', label: 'Funded Fee %' }
+        { key: 'access', label: 'Access Fee $' }
       ], Object.keys(appData.pfpAccessFees2Step).map(function (k) {
-        return { key: k, access: appData.pfpAccessFees2Step[k], funded: appData.pfpFundedPct2Step && appData.pfpFundedPct2Step[k] !== undefined ? appData.pfpFundedPct2Step[k] : 2 };
+        return { key: k, access: appData.pfpAccessFees2Step[k] };
       }), function (rows) {
-        var fees = {}, funded = {};
+        var fees = {};
         rows.forEach(function (r) {
-          if (r.key) { fees[r.key] = Number(r.access) || 0; funded[r.key] = Number(r.funded) || 0; }
+          if (r.key) { fees[r.key] = Number(r.access) || 0; }
         });
         appData.pfpAccessFees2Step = fees;
-        appData.pfpFundedPct2Step = funded;
       });
       body.insertAdjacentHTML('beforeend', section('s-pfp2', 'PFP Fees — 2-Step', Object.keys(appData.pfpAccessFees2Step).length + ' sizes', pfp2Html));
 
@@ -711,7 +685,7 @@
     function tableEditor(id, headers, fields, rows, onSave) {
       // Store callback directly (not via HTML script tag)
       __teSave[id] = onSave;
-      var html = '<table class="data-table" id="te-' + id + '"><thead><tr>';
+      var html = '<div class="table-wrap"><table class="data-table" id="te-' + id + '"><thead><tr>';
       headers.forEach(function (h) { html += '<th>' + h + '</th>'; });
       html += '<th style="width:50px"></th></tr></thead><tbody>';
       rows.forEach(function (r, i) {
@@ -721,7 +695,7 @@
         });
         html += '<td class="row-actions"><button onclick="deleteTableRow(this,\'' + id + '\')" title="Remove">✕</button></td></tr>';
       });
-      html += '</tbody></table>';
+      html += '</tbody></table></div>';
       html += '<div class="add-row-bar"><button onclick="addTableRow(\'' + id + '\')">+ Add Row</button></div>';
       html += '<input type="hidden" class="te-collector" value="' + id + '" />';
       return html;

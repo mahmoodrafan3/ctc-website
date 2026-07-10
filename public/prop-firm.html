@@ -784,10 +784,8 @@
         { label: 'Platform', value: 'cTrader' },
         { label: 'Payout Method', value: 'USDC via smart contract' }
       ],
-      pfpAccessFees1Step: { 5000: 0.4, 10000: 0.4, 25000: 0.4, 50000: 0.4, 100000: 0.4, 200000: 0.4 },
-      pfpFundedPct1Step: { 5000: 2, 10000: 2, 25000: 2, 50000: 2, 100000: 2, 200000: 2 },
-      pfpAccessFees2Step: { 5000: 0.4, 10000: 0.4, 25000: 0.4, 50000: 0.4, 100000: 0.4, 200000: 0.4 },
-      pfpFundedPct2Step: { 5000: 2, 10000: 2, 25000: 2, 50000: 2, 100000: 2, 200000: 2 },
+      pfpAccessFees1Step: { 5000: 20, 10000: 40, 25000: 100, 50000: 200, 100000: 400, 200000: 800 },
+      pfpAccessFees2Step: { 5000: 20, 10000: 40, 25000: 100, 50000: 200, 100000: 400, 200000: 800 },
       pfpRiskData: {
         low:      { label: 'Low Risk',       dailyLoss: '2%',   maxLoss: '1%',   drawdown: '5%',  leverage: '1:200', stopLoss: 'Opening & Closing', fee: 'Pay 100% from first payout', fundedFeePct: 1, upfrontPct: 0 },
         moderate: { label: 'Moderate Risk',  dailyLoss: '3%',   maxLoss: '1.5%', drawdown: '6%',  leverage: '1:100', stopLoss: 'Closing only',        fee: 'Pay 100% from first payout', fundedFeePct: 2, upfrontPct: 0 },
@@ -876,46 +874,21 @@
         });
       }
 
-      // Migrate old PFP dollar fees to percentages
+      // Migrate old PFP percentage fees to dollar values
       ['pfpAccessFees1Step', 'pfpAccessFees2Step'].forEach(function (key) {
         var obj = data[key];
         if (obj) {
           Object.keys(obj).forEach(function (size) {
             var val = Number(obj[size]);
-            // If value > 5, it's likely a dollar amount not a percentage — convert
-            if (val > 5) {
-              obj[size] = Math.round(val / Number(size) * 100 * 100) / 100;
+            // If value < 5, it's likely a percentage (e.g. 0.4%) — convert to dollar
+            if (val < 5 && val > 0) {
+              obj[size] = Math.round(Number(size) * val / 100);
             }
           });
         }
       });
 
-      // Migrate old PFP deduction dollar values to funded fee percentages
-      ['pfpDeductions1Step', 'pfpDeductions2Step'].forEach(function (key) {
-        var fundedKey = key === 'pfpDeductions1Step' ? 'pfpFundedPct1Step' : 'pfpFundedPct2Step';
-        // Only migrate if funded field doesn't exist yet and deductions exist
-        if (!data[fundedKey] && data[key]) {
-          data[fundedKey] = {};
-          Object.keys(data[key]).forEach(function (size) {
-            var val = Number(data[key][size]);
-            // Convert dollar value to percentage of account size
-            var pct = val > 0 && Number(size) > 0 ? Math.round(val / Number(size) * 100 * 100) / 100 : 2;
-            data[fundedKey][size] = pct;
-          });
-        }
-      });
-
-      // Ensure funded fee pcts exist if access fees exist but funded doesn't
-      ['1Step', '2Step'].forEach(function (step) {
-        var accessKey = 'pfpAccessFees' + step;
-        var fundedKey = 'pfpFundedPct' + step;
-        if (data[accessKey] && !data[fundedKey]) {
-          data[fundedKey] = {};
-          Object.keys(data[accessKey]).forEach(function (size) {
-            data[fundedKey][size] = 2;
-          });
-        }
-      });
+      // Migrate old PFP deduction fields — no longer needed (funded fee from risk data)
 
       return data;
     }
@@ -1194,9 +1167,8 @@
         var accessFees = stepKey === '1step' ? (appData.pfpAccessFees1Step || {}) : (appData.pfpAccessFees2Step || {});
         var riskData = (appData.pfpRiskData || {})[riskKey] || {};
 
-        // Access Fee = account size × fee percentage / 100
-        var feePct = Number(accessFees[sizeVal]) || 0;
-        var basePrice = feePct > 0 ? Math.round(Number(sizeVal) * feePct / 100) : 0;
+        // Access Fee = stored as dollar price directly
+        var basePrice = Number(accessFees[sizeVal]) || 0;
         if (basePrice > 0) {
           pfpTotalFee.textContent = '$' + basePrice.toLocaleString();
         } else {
@@ -1205,9 +1177,8 @@
         // Update coupon discounts based on access fee
         updateCouponDiscounts('pfpanel-pfp', basePrice);
 
-        // After Evaluation Funded Fee = funded fee % of account size (per-size, from fees table)
-        var fundedFees = stepKey === '1step' ? (appData.pfpFundedPct1Step || {}) : (appData.pfpFundedPct2Step || {});
-        var fundedFeePct = Number(fundedFees[sizeVal]) || 0;
+        // After Evaluation Funded Fee = funded fee % of account size (from risk data)
+        var fundedFeePct = Number(riskData.fundedFeePct) || 0;
         if (fundedFeePct > 0 && sizeVal) {
           var deductionAmount = Math.round(Number(sizeVal) * fundedFeePct / 100);
           pfpDeduction.textContent = '$' + deductionAmount.toLocaleString();

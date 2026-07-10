@@ -849,6 +849,7 @@
       coupons: [
         { code: 'MOZO10', reward: '10% OFF' },
         { code: 'MOZO20', reward: '20% OFF' },
+        { code: 'WELCOME25', reward: '25% OFF', panels: ['classic', 'pfp'] },
       ],
       prohibited: [
         '❌ High-Frequency Trading (HFT) bots',
@@ -926,6 +927,26 @@
         coupons.forEach(function (c) {
           var code = c.code || '';
           var reward = c.reward || '';
+
+          // If coupon has panel restrictions, check if this list is in an allowed panel
+          if (c.panels) {
+            var panel = list.closest('.pf-panel');
+            var panelId = panel ? panel.id : '';
+            var panelName = '';
+            if (panelId === 'pfpanel-classic') panelName = 'classic';
+            else if (panelId === 'pfpanel-pfp') panelName = 'pfp';
+            else if (panelId === 'pfpanel-instant') panelName = 'instant';
+            else if (panelId === 'pfpanel-abook') panelName = 'abook';
+
+            // For PFP panel, WELCOME25 only on 2-Step
+            if (panelName === 'pfp' && code === 'WELCOME25') {
+              var pfpStepEl = document.getElementById('pfpStep');
+              if (!pfpStepEl || pfpStepEl.value === '1step') return;
+            }
+
+            if (c.panels.indexOf(panelName) === -1) return;
+          }
+
           var item = document.createElement('div');
           item.className = 'pf-coupon-item';
           item.innerHTML = '<div class="pf-coupon-code">' + esc(code) + '</div>'
@@ -1154,7 +1175,13 @@
 
       if (pfpSize && pfpStep && pfpTotalFee && pfpDeduction) {
         pfpSize.addEventListener('change', updatePfpPrices);
-        pfpStep.addEventListener('change', updatePfpStep);
+        pfpStep.addEventListener('change', function() {
+          updatePfpStep();
+          // Re-populate all coupon lists to show/hide WELCOME25 based on step type
+          populateCoupons(appData.coupons);
+          // Recalculate discount prices for PFP (old spans were replaced)
+          updateCouponDiscounts('pfpanel-pfp', parseFloat((pfpTotalFee.textContent || '').replace(/[^0-9.]/g,'')) || 0);
+        });
         updatePfpPrices();
         updatePfpStep();
       }

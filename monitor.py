@@ -361,12 +361,16 @@ def main():
 
             result = calc_trend_magic_full(candles)
             latest = candles[-1]
+            prev = candles[-2] if len(candles) >= 2 else latest
             price = latest["close"]
             magic = result["magic_trend"]
             cci = result["cci"]
             trend = "BULL" if result["trend_bull"] else "BEAR"
 
+            # Print last 2 candles for comparison with TradingView
             print(f"P={price:.5f} M={magic:.5f} CCI={cci} {trend}", end="")
+            print(f"  |  Candle-1: O={prev['open']:.5f} H={prev['high']:.5f} L={prev['low']:.5f} C={prev['close']:.5f}", end="")
+            print(f"  |  Candle-0: O={latest['open']:.5f} H={latest['high']:.5f} L={latest['low']:.5f} C={latest['close']:.5f}", end="")
 
             # Determine raw signal
             raw_buy  = result["strong_buy"]  and result["trend_bull"]

@@ -784,10 +784,8 @@
         { label: 'Platform', value: 'cTrader' },
         { label: 'Payout Method', value: 'USDC via smart contract' }
       ],
-      pfpAccessFees1Step: { 5000: 19, 10000: 39, 25000: 99, 50000: 199, 100000: 399, 200000: 799 },
-      pfpDeductions1Step: { 5000: 69, 10000: 149, 25000: 349, 50000: 699, 100000: 1399, 200000: 2499 },
-      pfpAccessFees2Step: { 5000: 19, 10000: 39, 25000: 99, 50000: 199, 100000: 399, 200000: 799 },
-      pfpDeductions2Step: { 5000: 49, 10000: 99, 25000: 249, 50000: 499, 100000: 999, 200000: 1999 },
+      pfpAccessFees1Step: { 5000: 0.4, 10000: 0.4, 25000: 0.4, 50000: 0.4, 100000: 0.4, 200000: 0.4 },
+      pfpAccessFees2Step: { 5000: 0.4, 10000: 0.4, 25000: 0.4, 50000: 0.4, 100000: 0.4, 200000: 0.4 },
       pfpRiskData: {
         low:      { label: 'Low Risk',       dailyLoss: '2%',   maxLoss: '1%',   drawdown: '5%',  leverage: '1:200', stopLoss: 'Opening & Closing', fee: 'Pay 100% from first payout', fundedFeePct: 1, upfrontPct: 0 },
         moderate: { label: 'Moderate Risk',  dailyLoss: '3%',   maxLoss: '1.5%', drawdown: '6%',  leverage: '1:100', stopLoss: 'Closing only',        fee: 'Pay 100% from first payout', fundedFeePct: 2, upfrontPct: 0 },
@@ -861,9 +859,12 @@
       ]
     };
 
-    // Migrate old coupon panel names to new ones
-    function migratePanelNames(data) {
-      if (data && data.coupons) {
+    // Migrate old data formats to new ones
+    function migrateData(data) {
+      if (!data) return data;
+
+      // Migrate coupon panel names
+      if (data.coupons) {
         data.coupons.forEach(function (c) {
           if (c.panels) {
             var hadPfp = c.panels.indexOf('pfp') !== -1;
@@ -872,6 +873,21 @@
           }
         });
       }
+
+      // Migrate old PFP dollar fees to percentages
+      ['pfpAccessFees1Step', 'pfpAccessFees2Step'].forEach(function (key) {
+        var obj = data[key];
+        if (obj) {
+          Object.keys(obj).forEach(function (size) {
+            var val = Number(obj[size]);
+            // If value > 5, it's likely a dollar amount not a percentage — convert
+            if (val > 5) {
+              obj[size] = Math.round(val / Number(size) * 100 * 100) / 100;
+            }
+          });
+        }
+      });
+
       return data;
     }
 
@@ -881,7 +897,7 @@
         var res = await fetch('/api/prop-firm-data');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
-        migratePanelNames(data);
+        migrateData(data);
         appData = Object.assign({}, DEFAULT_SEED, data);
       } catch (e) {
         appData = DEFAULT_SEED;
@@ -1149,14 +1165,16 @@
         var accessFees = stepKey === '1step' ? (appData.pfpAccessFees1Step || {}) : (appData.pfpAccessFees2Step || {});
         var riskData = (appData.pfpRiskData || {})[riskKey] || {};
 
-        // Access Fee
-        if (accessFees[sizeVal] !== undefined) {
-          pfpTotalFee.textContent = '$' + Number(accessFees[sizeVal]).toLocaleString();
+        // Access Fee = account size × fee percentage / 100
+        var feePct = Number(accessFees[sizeVal]) || 0;
+        var basePrice = feePct > 0 ? Math.round(Number(sizeVal) * feePct / 100) : 0;
+        if (basePrice > 0) {
+          pfpTotalFee.textContent = '$' + basePrice.toLocaleString();
         } else {
           pfpTotalFee.textContent = '—';
         }
         // Update coupon discounts based on access fee
-        updateCouponDiscounts('pfpanel-pfp', Number(accessFees[sizeVal]) || 0);
+        updateCouponDiscounts('pfpanel-pfp', basePrice);
 
         // After Evaluation Funded Fee = fundedFeePct% of capital
         var fundedFeePct = Number(riskData.fundedFeePct);

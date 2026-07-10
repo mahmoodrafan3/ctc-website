@@ -398,9 +398,12 @@
       document.getElementById('password').focus();
     }
 
-    // Migrate old coupon panel names to new ones
-    function migratePanelNames(data) {
-      if (data && data.coupons) {
+    // Migrate old data formats to new ones
+    function migrateData(data) {
+      if (!data) return data;
+
+      // Migrate coupon panel names
+      if (data.coupons) {
         data.coupons.forEach(function (c) {
           if (c.panels) {
             var hadPfp = c.panels.indexOf('pfp') !== -1;
@@ -409,6 +412,21 @@
           }
         });
       }
+
+      // Migrate old PFP dollar fees to percentages
+      ['pfpAccessFees1Step', 'pfpAccessFees2Step'].forEach(function (key) {
+        var obj = data[key];
+        if (obj) {
+          Object.keys(obj).forEach(function (size) {
+            var val = Number(obj[size]);
+            // If value > 5, it's likely a dollar amount not a percentage — convert
+            if (val > 5) {
+              obj[size] = Math.round(val / Number(size) * 100 * 100) / 100;
+            }
+          });
+        }
+      });
+
       return data;
     }
 
@@ -423,7 +441,7 @@
         }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         appData = await res.json();
-        migratePanelNames(appData);
+        migrateData(appData);
         renderDashboard();
         document.getElementById('lastSaved').textContent = 'Loaded';
       } catch (e) {
@@ -512,36 +530,32 @@
       body.insertAdjacentHTML('beforeend', section('s-bee', 'Classic Bee Prices', Object.keys(appData.classicBeePrices || {}).length + ' sizes', beePricesHtml));
 
       // ── PFP Fees 1-Step ──────────────────────────────
-      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee ($)', 'Deduction ($)'], [
+      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee (%)'], [
         { key: 'key', label: 'Size' },
-        { key: 'access', label: 'Access Fee' },
-        { key: 'deduction', label: 'Deduction' }
+        { key: 'access', label: 'Access Fee %' }
       ], Object.keys(appData.pfpAccessFees1Step).map(function (k) {
-        return { key: k, access: appData.pfpAccessFees1Step[k], deduction: appData.pfpDeductions1Step[k] };
+        return { key: k, access: appData.pfpAccessFees1Step[k] };
       }), function (rows) {
-        var fees = {}, ded = {};
+        var fees = {};
         rows.forEach(function (r) {
-          if (r.key) { fees[r.key] = Number(r.access) || 0; ded[r.key] = Number(r.deduction) || 0; }
+          if (r.key) { fees[r.key] = Number(r.access) || 0; }
         });
         appData.pfpAccessFees1Step = fees;
-        appData.pfpDeductions1Step = ded;
       });
       body.insertAdjacentHTML('beforeend', section('s-pfp1', 'PFP Fees — 1-Step', Object.keys(appData.pfpAccessFees1Step).length + ' sizes', pfp1Html));
 
       // ── PFP Fees 2-Step ──────────────────────────────
-      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee ($)', 'Deduction ($)'], [
+      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee (%)'], [
         { key: 'key', label: 'Size' },
-        { key: 'access', label: 'Access Fee' },
-        { key: 'deduction', label: 'Deduction' }
+        { key: 'access', label: 'Access Fee %' }
       ], Object.keys(appData.pfpAccessFees2Step).map(function (k) {
-        return { key: k, access: appData.pfpAccessFees2Step[k], deduction: appData.pfpDeductions2Step[k] };
+        return { key: k, access: appData.pfpAccessFees2Step[k] };
       }), function (rows) {
-        var fees = {}, ded = {};
+        var fees = {};
         rows.forEach(function (r) {
-          if (r.key) { fees[r.key] = Number(r.access) || 0; ded[r.key] = Number(r.deduction) || 0; }
+          if (r.key) { fees[r.key] = Number(r.access) || 0; }
         });
         appData.pfpAccessFees2Step = fees;
-        appData.pfpDeductions2Step = ded;
       });
       body.insertAdjacentHTML('beforeend', section('s-pfp2', 'PFP Fees — 2-Step', Object.keys(appData.pfpAccessFees2Step).length + ' sizes', pfp2Html));
 

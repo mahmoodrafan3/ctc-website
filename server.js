@@ -117,6 +117,63 @@ app.post('/api/admin/prop-firm-data', requireAdmin, express.json(), async (req, 
 });
 
 
+// ── WhatsApp Webhook (for receiving message status and incoming messages) ──
+const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'ctc_strategy_wh_2026';
+
+app.get('/api/webhook/whatsapp', (req, res) => {
+  // WhatsApp Cloud API verification challenge
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode === 'subscribe' && token === WHATSAPP_VERIFY_TOKEN) {
+    console.log('✅ WhatsApp webhook verified');
+    return res.status(200).send(challenge);
+  }
+  res.sendStatus(403);
+});
+
+app.post('/api/webhook/whatsapp', express.json(), (req, res) => {
+  // Acknowledge receipt immediately (WhatsApp expects 200 within 20s)
+  res.sendStatus(200);
+
+  const body = req.body;
+  if (!body || !body.entry) return;
+
+  // Process each entry
+  for (const entry of body.entry) {
+    for (const change of entry.changes || []) {
+      if (change.field !== 'messages') continue;
+      const value = change.value;
+
+      // Check for incoming messages from customers
+      if (value.messages) {
+        for (const msg of value.messages) {
+          const from = msg.from; // sender phone number
+          const text = msg.text?.body || '';
+          const msgType = msg.type || 'unknown';
+
+          console.log(`📩 WhatsApp from ${from}: ${text}`);
+
+          // Customer messaged us — conversation window is now open!
+          // The monitor will be able to send alerts to this number for 24 hours
+        }
+      }
+
+      // Check for message status updates (sent, delivered, read, failed)
+      if (value.statuses) {
+        for (const status of value.statuses) {
+          const statusType = status.status; // 'sent', 'delivered', 'read', 'failed'
+          const msgId = status.id || '';
+          if (statusType === 'failed') {
+            console.warn(`❌ WhatsApp msg ${msgId} failed:`, status.errors);
+          }
+        }
+      }
+    }
+  }
+});
+
 // Route for /code - serve code.html
 app.get('/code', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'code.html'));

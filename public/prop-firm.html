@@ -849,7 +849,7 @@
       coupons: [
         { code: 'MOZO10', reward: '10% OFF' },
         { code: 'MOZO20', reward: '20% OFF' },
-        { code: 'WELCOME25', reward: '25% OFF', panels: ['classic', 'pfp'] },
+        { code: 'WELCOME25', reward: '25% OFF', panels: ['classic', 'pfp-2step'] },
       ],
       prohibited: [
         '❌ High-Frequency Trading (HFT) bots',
@@ -930,9 +930,9 @@
 
           // Determine allowed panels for this coupon
           var panels = c.panels;
-          // WELCOME25 defaults to classic + pfp only (even if MongoDB data doesn't have panels field)
+          // WELCOME25 defaults to classic + pfp-2step only (even if MongoDB data doesn't have panels field)
           if (!panels && code === 'WELCOME25') {
-            panels = ['classic', 'pfp'];
+            panels = ['classic', 'pfp-2step'];
           }
 
           if (panels) {
@@ -940,15 +940,13 @@
             var panelId = panel ? panel.id : '';
             var panelName = '';
             if (panelId === 'pfpanel-classic') panelName = 'classic';
-            else if (panelId === 'pfpanel-pfp') panelName = 'pfp';
+            else if (panelId === 'pfpanel-pfp') {
+              // Determine PFP step type dynamically
+              var pfpStepEl = document.getElementById('pfpStep');
+              panelName = pfpStepEl && pfpStepEl.value === '2step' ? 'pfp-2step' : 'pfp-1step';
+            }
             else if (panelId === 'pfpanel-instant') panelName = 'instant';
             else if (panelId === 'pfpanel-abook') panelName = 'abook';
-
-            // For PFP panel, WELCOME25 only on 2-Step
-            if (panelName === 'pfp' && code === 'WELCOME25') {
-              var pfpStepEl = document.getElementById('pfpStep');
-              if (!pfpStepEl || pfpStepEl.value === '1step') return;
-            }
 
             if (panels.indexOf(panelName) === -1) return;
           }

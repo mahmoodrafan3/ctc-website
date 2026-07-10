@@ -78,8 +78,41 @@
       font-size: 0.78rem; color: var(--text-muted);
     }
 
+    /* ── Admin Layout (sidebar + body) ───────────── */
+    .admin-layout {
+      display: flex; max-width: 1200px; margin: 0 auto; padding: 32px 0 80px;
+    }
+
+    /* ── Left Sidebar Navigation ───────────────────── */
+    .admin-sidebar {
+      width: 200px; flex-shrink: 0; position: sticky; top: 76px;
+      align-self: flex-start; max-height: calc(100vh - 100px);
+      overflow-y: auto; padding: 0 12px;
+    }
+    .admin-sidebar::-webkit-scrollbar { width: 4px; }
+    .admin-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .admin-sidebar .s-nav-btn {
+      display: block; width: 100%; text-align: left;
+      padding: 7px 10px; margin-bottom: 2px;
+      background: none; border: none; border-radius: var(--radius);
+      color: var(--text-dim); font-size: 0.75rem; font-weight: 600;
+      font-family: var(--font); cursor: pointer; transition: all 0.15s;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .admin-sidebar .s-nav-btn:hover {
+      background: rgba(255,255,255,0.04); color: var(--text);
+    }
+    .admin-sidebar .s-nav-btn.active {
+      background: rgba(59,130,246,0.12); color: var(--accent);
+    }
+    .admin-sidebar .s-nav-label {
+      font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 12px 10px 4px; font-weight: 700;
+    }
+
     .admin-body {
-      max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px;
+      flex: 1; min-width: 0; padding: 32px 24px 80px;
     }
 
     .btn {
@@ -294,7 +327,10 @@
       </div>
     </div>
 
-    <div class="admin-body" id="adminBody"></div>
+    <div class="admin-layout">
+      <nav class="admin-sidebar" id="adminSidebar"></nav>
+      <div class="admin-body" id="adminBody"></div>
+    </div>
 
   </div>
 
@@ -606,6 +642,9 @@
         + '<button class="btn btn-success" style="padding:14px 48px;font-size:1rem;" onclick="collectAll();saveData()">'
         + 'Save All Changes</button></div>'
       );
+
+      // ── Build sidebar navigation ─────────────────────
+      buildSidebar();
     }
 
     // ── Table Editor ───────────────────────────────────
@@ -765,9 +804,9 @@
         + '<div class="form-group" style="flex:1.5"><label>Apply to Plans</label>'
         + '<div class="cb-group">'
         + '<label><input type="checkbox" class="ce-panel" value="classic" ' + checked('classic') + ' /> Classic</label>'
-        + '<label><input type="checkbox" class="ce-panel" value="pfp" ' + checked('pfp') + ' /> PFP</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="pfp-1step" ' + checked('pfp-1step') + ' /> PFP 1-Step</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="pfp-2step" ' + checked('pfp-2step') + ' /> PFP 2-Step</label>'
         + '<label><input type="checkbox" class="ce-panel" value="instant" ' + checked('instant') + ' /> Instant</label>'
-        + '<label><input type="checkbox" class="ce-panel" value="abook" ' + checked('abook') + ' /> AADS</label>'
         + '</div></div>'
         + '<button class="remove-btn" onclick="deleteCouponRow(this)">✕</button>'
         + '</div>';
@@ -785,9 +824,9 @@
         + '<div class="form-group" style="flex:1.5"><label>Apply to Plans</label>'
         + '<div class="cb-group">'
         + '<label><input type="checkbox" class="ce-panel" value="classic" /> Classic</label>'
-        + '<label><input type="checkbox" class="ce-panel" value="pfp" /> PFP</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="pfp-1step" /> PFP 1-Step</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="pfp-2step" /> PFP 2-Step</label>'
         + '<label><input type="checkbox" class="ce-panel" value="instant" /> Instant</label>'
-        + '<label><input type="checkbox" class="ce-panel" value="abook" /> AADS</label>'
         + '</div></div>'
         + '<button class="remove-btn" onclick="deleteCouponRow(this)">✕</button>';
       container.appendChild(div);
@@ -955,6 +994,67 @@
       collectAll();
       origSave();
     };
+
+    // ── Sidebar Navigation ────────────────────────────
+    var SIDEBAR_SECTIONS = [
+      { id: 's-bee', label: 'Bee Prices' },
+      { id: 's-pfp1', label: 'PFP 1-Step' },
+      { id: 's-pfp2', label: 'PFP 2-Step' },
+      { id: 's-risk', label: 'Risk Data' },
+      { id: 's-step', label: 'Step Data' },
+      { id: 's-instant', label: 'Instant Levels' },
+      { id: 's-cd', label: 'Classic Details' },
+      { id: 's-id', label: 'Instant Details' },
+      { id: 's-pd', label: 'PFP Details' },
+      { id: 's-coupons', label: 'Coupons' },
+      { id: 's-pfp-labels', label: 'Price Labels' },
+      { id: 's-prohibited', label: 'Prohibited' }
+    ];
+
+    function buildSidebar() {
+      var sidebar = document.getElementById('adminSidebar');
+      if (!sidebar) return;
+      var html = '<div class="s-nav-label">Sections</div>';
+      SIDEBAR_SECTIONS.forEach(function (s) {
+        html += '<button class="s-nav-btn" data-target="' + s.id + '" onclick="scrollToSection(\'' + s.id + '\')">'
+          + esc(s.label) + '</button>';
+      });
+      sidebar.innerHTML = html;
+      // Highlight first section on load
+      setTimeout(updateSidebarActive, 100);
+    }
+
+    function scrollToSection(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var header = document.querySelector('.admin-header');
+      var offset = header ? header.offsetHeight + 8 : 72;
+      var top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    }
+
+    function updateSidebarActive() {
+      var buttons = document.querySelectorAll('.s-nav-btn');
+      if (!buttons.length) return;
+      var header = document.querySelector('.admin-header');
+      var offset = header ? header.offsetHeight + 16 : 80;
+      var scrollY = window.pageYOffset + offset;
+      var activeId = '';
+      SIDEBAR_SECTIONS.forEach(function (s) {
+        var el = document.getElementById(s.id);
+        if (el && el.offsetTop <= scrollY) {
+          activeId = s.id;
+        }
+      });
+      buttons.forEach(function (btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-target') === activeId);
+      });
+    }
+
+    // Listen for scroll to update sidebar active state
+    window.addEventListener('scroll', function () {
+      requestAnimationFrame(updateSidebarActive);
+    });
 
     // ── Utility ────────────────────────────────────────
     function esc(str) {

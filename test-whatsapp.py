@@ -38,11 +38,17 @@ payload = {
 
 try:
     resp = requests.post(url, headers=headers, json=payload, timeout=15)
+    print(f"📡 Status: {resp.status_code}")
+    print(f"📄 Full response:\n{resp.text}")
     if resp.status_code in (200, 201):
-        print("✅ Demo WhatsApp sent successfully!")
-        print(f"   Check your phone: {ALERT_PHONE}")
+        data = resp.json()
+        if data.get("messages"):
+            msg_id = data["messages"][0].get("id", "unknown")
+            print(f"✅ WhatsApp API accepted — Message ID: {msg_id}")
+            print(f"   Check your phone: {ALERT_PHONE}")
+        else:
+            print("⚠️  No message ID in response — may not be delivered")
     else:
-        print(f"❌ WhatsApp API error {resp.status_code}")
-        print(f"   Response: {resp.text}")
+        print(f"❌ WhatsApp API error")
 except requests.RequestException as e:
     print(f"❌ Request failed: {e}")

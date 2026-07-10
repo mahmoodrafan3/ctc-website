@@ -13,12 +13,14 @@
 // ============================================================================
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using cAlgo.API;
 using cAlgo.API.Indicators;
 using cAlgo.API.Requests;
+using Newtonsoft.Json;
 
 namespace cAlgo.Robots
 {
@@ -26,14 +28,13 @@ namespace cAlgo.Robots
     public class CTCMonitor : Robot
     {
         // ════════════════════════════════════════════════════════════════
-        // CONFIGURATION — EDIT THESE VALUES
+        // CONFIGURATION — EDIT THESE VALUES BEFORE RUNNING
         // ════════════════════════════════════════════════════════════════
         
-        // Telegram Bot credentials (from @BotFather)
         private const string TelegramBotToken = "8899864917:AAE-8bHbEKTfjzsIenWnacSZ79Gt0SKBdgM";
         private const string TelegramChatId = "1235128870";
         
-        // Trend Magic parameters (match Pine Script defaults)
+        // Trend Magic parameters
         private const int CciPeriod = 15;
         private const int AtrPeriod = 5;
         private const double AtrCoeff = 1.0;
@@ -48,38 +49,33 @@ namespace cAlgo.Robots
         
         private readonly HttpClient _httpClient = new HttpClient();
         private DateTime _lastAlertTime = DateTime.MinValue;
-        private const int MinMinutesBetweenAlerts = 10; // Avoid duplicate alerts
+        private const int MinMinutesBetweenAlerts = 10;
+        private TimeZoneInfo _estZone;
+        private readonly List<Task> _pendingTasks = new List<Task>();
         
         protected override void OnStart()
         {
+            _estZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
             Print("🚀 CTC Strategy Monitor started on " + SymbolName + " " + TimeFrame);
             Print("   Telegram alerts enabled — checking every new candle");
         }
         
         protected override void OnBar()
         {
-            // Check session time
-            if (!IsInSession())
-            {
-                return;
-            }
-            
-            // Need enough bars for calculation
-            int neededBars = Math.Max(CciPeriod, AtrPeriod) + 2;
-            if (Bars.Count < neededBars)
+            if (!IsInSession(out string sessionName))
                 return;
             
-            // Calculate Trend Magic
+            if (Bars.Count < Math.Max(CciPeriod, AtrPeriod) + 2)
+                return;
+            
             var result = CalculateTrendMagic();
             
-            // Check for signal
             bool signalBuy = result.StrongBuy && result.TrendBull;
             bool signalSell = result.StrongSell && !result.TrendBull;
             
             if (!signalBuy && !signalSell)
                 return;
             
-            // Avoid duplicate alerts within MinMinutesBetweenAlerts
             if ((Server.Time - _lastAlertTime).TotalMinutes < MinMinutesBetweenAlerts)
                 return;
             
@@ -100,97 +96,80 @@ namespace cAlgo.Robots
                 SymbolName,
                 Bars.Last(0).Close,
                 result.MagicTrend,
-                GetSessionName(),
+                sessionName,
                 result.Cci,
                 trend,
                 Server.Time);
             
-            // Send alert asynchronously (fire-and-forget)
-            Task.Run(() => SendTelegramAlert(message));
+            // Track pending HTTP tasks so we can await them cleanly on stop
+            var task = Task.Run(() => SendTelegramAlert(message));
+            lock (_pendingTasks)
+            {
+                _pendingTasks.Add(task);
+            }
             
             Print("🚨 " + signalType + " SIGNAL on " + SymbolName + " at " + Bars.Last(0).Close);
         }
         
-        private bool IsInSession()
+        private bool IsInSession(out string sessionName)
         {
-            DateTime nyTime = Server.Time; // cTrader handles timezone conversion via Robot TimeZone
-            
-            // Since we set TimeZone = UTC, we need to convert to EST
-            TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
-            DateTime estTime = TimeZoneInfo.ConvertTime(Server.Time, TimeZoneInfo.Utc, estZone);
-            
-            int minutes = estTime.Hour * 60 + estTime.Minute;
-            
-            return (minutes >= LondonStart && minutes < LondonEnd) ||
-                   (minutes >= NyStart && minutes < NyEnd);
-        }
-        
-        private string GetSessionName()
-        {
-            TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
-            DateTime estTime = TimeZoneInfo.ConvertTime(Server.Time, TimeZoneInfo.Utc, estZone);
+            DateTime estTime = TimeZoneInfo.ConvertTime(Server.Time, TimeZoneInfo.Utc, _estZone);
             int minutes = estTime.Hour * 60 + estTime.Minute;
             
             if (minutes >= LondonStart && minutes < LondonEnd)
-                return "London";
+            {
+                sessionName = "London";
+                return true;
+            }
             if (minutes >= NyStart && minutes < NyEnd)
-                return "New York";
-            return "Outside";
+            {
+                sessionName = "New York";
+                return true;
+            }
+            
+            sessionName = "";
+            return false;
         }
         
         private TrendMagicResult CalculateTrendMagic()
         {
-            int n = Bars.Count;
-            int startIdx = n - Math.Max(CciPeriod, AtrPeriod) - 10;
-            if (startIdx < 0) startIdx = 0;
-            int len = n - startIdx;
+            int startIdx = Math.Max(0, Bars.Count - Math.Max(CciPeriod, AtrPeriod) - 10);
+            int len = Bars.Count - startIdx;
             
-            // Extract candle arrays from the last N bars
-            double[] opens = new double[len];
-            double[] highs = new double[len];
-            double[] lows = new double[len];
-            double[] closes = new double[len];
-            
-            for (int i = 0; i < len; i++)
-            {
-                int barIdx = startIdx + i;
-                opens[i] = Bars.OpenPrices[barIdx];
-                highs[i] = Bars.HighPrices[barIdx];
-                lows[i] = Bars.LowPrices[barIdx];
-                closes[i] = Bars.ClosePrices[barIdx];
-            }
-            
-            // Compute ATR
+            // Compute ATR (SMA of True Range)
             double[] atr = new double[len];
             for (int i = AtrPeriod; i < len; i++)
             {
                 double sum = 0;
                 for (int j = i - AtrPeriod + 1; j <= i; j++)
                 {
-                    double tr = Math.Max(highs[j] - lows[j],
-                        Math.Max(Math.Abs(highs[j] - closes[j - 1]),
-                                 Math.Abs(lows[j] - closes[j - 1])));
+                    int idx = startIdx + j;
+                    double tr = Math.Max(
+                        Bars.HighPrices[idx] - Bars.LowPrices[idx],
+                        Math.Max(
+                            Math.Abs(Bars.HighPrices[idx] - Bars.ClosePrices[idx - 1]),
+                            Math.Abs(Bars.LowPrices[idx] - Bars.ClosePrices[idx - 1])));
                     sum += tr;
                 }
                 atr[i] = sum / AtrPeriod;
             }
             
-            // Compute CCI
+            // Compute CCI on close
             double[] cci = new double[len];
             for (int i = CciPeriod - 1; i < len; i++)
             {
                 double sum = 0;
                 for (int j = i - CciPeriod + 1; j <= i; j++)
-                    sum += closes[j];
+                    sum += Bars.ClosePrices[startIdx + j];
                 double sma = sum / CciPeriod;
                 
                 double md = 0;
                 for (int j = i - CciPeriod + 1; j <= i; j++)
-                    md += Math.Abs(closes[j] - sma);
+                    md += Math.Abs(Bars.ClosePrices[startIdx + j] - sma);
                 md /= CciPeriod;
                 
                 if (md != 0)
-                    cci[i] = (closes[i] - sma) / (0.015 * md);
+                    cci[i] = (Bars.ClosePrices[startIdx + i] - sma) / (0.015 * md);
             }
             
             // Compute MagicTrend recursively
@@ -203,8 +182,9 @@ namespace cAlgo.Robots
                 double atrVal = atr[i];
                 if (atrVal == 0) continue;
                 
-                double upT = lows[i] - atrVal * AtrCoeff;
-                double downT = highs[i] + atrVal * AtrCoeff;
+                int idx = startIdx + i;
+                double upT = Bars.LowPrices[idx] - atrVal * AtrCoeff;
+                double downT = Bars.HighPrices[idx] + atrVal * AtrCoeff;
                 
                 if (!firstValid)
                 {
@@ -214,39 +194,31 @@ namespace cAlgo.Robots
                 else
                 {
                     double prev = magicTrend[i - 1];
-                    if (cciVal >= 0)
-                        magicTrend[i] = Math.Max(upT, prev);
-                    else
-                        magicTrend[i] = Math.Min(downT, prev);
+                    magicTrend[i] = cciVal >= 0
+                        ? Math.Max(upT, prev)
+                        : Math.Min(downT, prev);
                 }
             }
             
-            // Get latest values
-            double cciLatest = cci[len - 1];
-            bool trendBull = cciLatest >= 0;
-            double mtLatest = magicTrend[len - 1];
-            
-            // Check last 2 candles for body crossover
-            bool strongBuy = false;
-            bool strongSell = false;
-            
-            int checkStart = Math.Max(1, len - 2);
-            for (int i = checkStart; i < len; i++)
+            // Check last 2 candles for body crossover against their own magic_trend
+            bool strongBuy = false, strongSell = false;
+            for (int i = Math.Max(1, len - 2); i < len; i++)
             {
                 double mt = magicTrend[i];
-                if (opens[i] < mt && closes[i] > mt)
+                int idx = startIdx + i;
+                if (Bars.OpenPrices[idx] < mt && Bars.ClosePrices[idx] > mt)
                     strongBuy = true;
-                if (opens[i] > mt && closes[i] < mt)
+                if (Bars.OpenPrices[idx] > mt && Bars.ClosePrices[idx] < mt)
                     strongSell = true;
             }
             
             return new TrendMagicResult
             {
-                MagicTrend = mtLatest,
-                Cci = cciLatest,
+                MagicTrend = magicTrend[len - 1],
+                Cci = cci[len - 1],
                 StrongBuy = strongBuy,
                 StrongSell = strongSell,
-                TrendBull = trendBull
+                TrendBull = cci[len - 1] >= 0
             };
         }
         
@@ -256,30 +228,60 @@ namespace cAlgo.Robots
             {
                 string url = string.Format("https://api.telegram.org/bot{0}/sendMessage", TelegramBotToken);
                 
-                string json = string.Format(
-                    "{{\"chat_id\":\"{0}\",\"text\":\"{1}\"}}",
-                    TelegramChatId,
-                    message.Replace("\"", "\\\"").Replace("\n", "\\n"));
+                var payload = new
+                {
+                    chat_id = TelegramChatId,
+                    text = message
+                };
                 
+                string json = JsonConvert.SerializeObject(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 
-                var response = await _httpClient.PostAsync(url, content);
+                var response = await _httpClient.PostAsync(url, content).ConfigureAwait(false);
                 
                 if (response.IsSuccessStatusCode)
                     Print("✅ Telegram alert sent");
                 else
-                    Print("❌ Telegram error: " + response.StatusCode);
+                {
+                    string body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    Print("❌ Telegram error: " + response.StatusCode + " - " + body);
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Bot stopping — ignore
             }
             catch (Exception ex)
             {
                 Print("❌ Telegram send failed: " + ex.Message);
             }
+            finally
+            {
+                lock (_pendingTasks)
+                {
+                    _pendingTasks.RemoveAll(t => t.IsCompleted);
+                }
+            }
         }
         
         protected override void OnStop()
         {
-            Print("CTC Strategy Monitor stopped");
+            Print("CTC Strategy Monitor stopping...");
+            
+            // Wait for pending HTTP tasks to complete
+            Task[] pending;
+            lock (_pendingTasks)
+            {
+                pending = _pendingTasks.ToArray();
+            }
+            try
+            {
+                Task.WaitAll(pending, TimeSpan.FromSeconds(5));
+            }
+            catch { }
+            
             _httpClient.Dispose();
+            Print("CTC Strategy Monitor stopped");
         }
     }
     

@@ -426,14 +426,6 @@ def main():
                 print(" ✅")
                 continue
 
-            # ── HTF Touch confirmation (ON by default in Pine Script) ──
-            print(f"  HTF check...", end=" ", flush=True)
-            htf_ok = verify_htf_touch(symbol, candles[-HTF_TOUCH_BARS:])
-
-            if not htf_ok:
-                print("⏭️  No HTF touch — filtered")
-                continue
-
             cross_type = "BUY" if raw_buy else "SELL"
             print(f"🚨 {cross_type}!")
 

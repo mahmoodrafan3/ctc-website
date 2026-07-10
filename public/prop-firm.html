@@ -861,12 +861,27 @@
       ]
     };
 
+    // Migrate old coupon panel names to new ones
+    function migratePanelNames(data) {
+      if (data && data.coupons) {
+        data.coupons.forEach(function (c) {
+          if (c.panels) {
+            var hadPfp = c.panels.indexOf('pfp') !== -1;
+            c.panels = c.panels.filter(function (p) { return p !== 'pfp' && p !== 'abook'; });
+            if (hadPfp && c.panels.indexOf('pfp-2step') === -1) c.panels.push('pfp-2step');
+          }
+        });
+      }
+      return data;
+    }
+
     async function loadPropFirmData() {
       // Always fetch fresh data from the API — no localStorage cache to avoid stale data
       try {
         var res = await fetch('/api/prop-firm-data');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
+        migratePanelNames(data);
         appData = Object.assign({}, DEFAULT_SEED, data);
       } catch (e) {
         appData = DEFAULT_SEED;

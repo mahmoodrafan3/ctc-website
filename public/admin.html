@@ -398,6 +398,20 @@
       document.getElementById('password').focus();
     }
 
+    // Migrate old coupon panel names to new ones
+    function migratePanelNames(data) {
+      if (data && data.coupons) {
+        data.coupons.forEach(function (c) {
+          if (c.panels) {
+            var hadPfp = c.panels.indexOf('pfp') !== -1;
+            c.panels = c.panels.filter(function (p) { return p !== 'pfp' && p !== 'abook'; });
+            if (hadPfp && c.panels.indexOf('pfp-2step') === -1) c.panels.push('pfp-2step');
+          }
+        });
+      }
+      return data;
+    }
+
     async function loadData() {
       showLoading(true);
       try {
@@ -409,6 +423,7 @@
         }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         appData = await res.json();
+        migratePanelNames(appData);
         renderDashboard();
         document.getElementById('lastSaved').textContent = 'Loaded';
       } catch (e) {

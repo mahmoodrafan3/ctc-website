@@ -1,0 +1,46 @@
+name: CTC Strategy Monitor
+
+on:
+  schedule:
+    # Every 5 minutes during market hours (the script skips outside sessions)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions tab for testing
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run CTC monitor
+        run: python monitor.py
+        env:
+          # ── Data API ──────────────────────────
+          DATA_API: ${{ vars.DATA_API || 'twelvedata' }}
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+          ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
+
+          # ── WhatsApp Cloud API ────────────────
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_ID: ${{ secrets.WHATSAPP_PHONE_ID }}
+          ALERT_PHONE: ${{ secrets.ALERT_PHONE }}
+
+          # ── Strategy config (optional overrides) ─
+          MONITOR_SYMBOLS: ${{ vars.MONITOR_SYMBOLS || 'EURUSD,GBPUSD,USDJPY' }}
+          MONITOR_TIMEFRAME: ${{ vars.MONITOR_TIMEFRAME || '1min' }}
+          CCI_PERIOD: ${{ vars.CCI_PERIOD || '15' }}
+          ATR_PERIOD: ${{ vars.ATR_PERIOD || '5' }}
+          ATR_COEFF: ${{ vars.ATR_COEFF || '1.0' }}

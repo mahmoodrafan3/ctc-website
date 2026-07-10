@@ -236,7 +236,8 @@ def calc_trend_magic_full(candles: list[dict[str, float]]) -> dict[str, Any]:
     atr_arr = compute_atr_array(candles, ATR_PERIOD)
     cci_arr = compute_cci_array(candles, CCI_PERIOD)
 
-    # Recursive MagicTrend calculation
+    # Recursive MagicTrend calculation — store value at each candle
+    magic_trend_arr = [0.0] * n
     magic_trend = 0.0
     prev_magic = 0.0
     first_valid = False
@@ -263,16 +264,25 @@ def calc_trend_magic_full(candles: list[dict[str, float]]) -> dict[str, Any]:
                 # Bearish: only moves DOWN
                 magic_trend = down_t if down_t < prev_magic else prev_magic
 
-    latest = candles[-1]
+        magic_trend_arr[i] = magic_trend
+
     cci_latest = cci_arr[-1]
     trend_bull = cci_latest >= 0
 
-    # Strong cross = open on one side, close on the other
-    strong_buy  = latest["open"] < magic_trend and latest["close"] > magic_trend
-    strong_sell = latest["open"] > magic_trend and latest["close"] < magic_trend
+    # Check last 2 candles for body crossover against their own magic_trend
+    # This catches crossovers on the just-closed candle even if a new candle opened
+    strong_buy = False
+    strong_sell = False
+    for i in range(max(1, n - 2), n):
+        c = candles[i]
+        mt = magic_trend_arr[i]
+        if c["open"] < mt and c["close"] > mt:
+            strong_buy = True
+        if c["open"] > mt and c["close"] < mt:
+            strong_sell = True
 
     return {
-        "magic_trend": round(magic_trend, 5),
+        "magic_trend": round(magic_trend_arr[-1], 5),
         "cci": round(cci_latest, 2),
         "strong_buy": strong_buy,
         "strong_sell": strong_sell,

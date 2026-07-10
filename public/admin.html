@@ -427,6 +427,32 @@
         }
       });
 
+      // Migrate old PFP deduction dollar values to funded fee percentages
+      ['pfpDeductions1Step', 'pfpDeductions2Step'].forEach(function (key) {
+        var fundedKey = key === 'pfpDeductions1Step' ? 'pfpFundedPct1Step' : 'pfpFundedPct2Step';
+        // Only migrate if funded field doesn't exist yet and deductions exist
+        if (!data[fundedKey] && data[key]) {
+          data[fundedKey] = {};
+          Object.keys(data[key]).forEach(function (size) {
+            var val = Number(data[key][size]);
+            var pct = val > 0 && Number(size) > 0 ? Math.round(val / Number(size) * 100 * 100) / 100 : 2;
+            data[fundedKey][size] = pct;
+          });
+        }
+      });
+
+      // Ensure funded fee pcts exist if access fees exist but funded doesn't
+      ['1Step', '2Step'].forEach(function (step) {
+        var accessKey = 'pfpAccessFees' + step;
+        var fundedKey = 'pfpFundedPct' + step;
+        if (data[accessKey] && !data[fundedKey]) {
+          data[fundedKey] = {};
+          Object.keys(data[accessKey]).forEach(function (size) {
+            data[fundedKey][size] = 2;
+          });
+        }
+      });
+
       return data;
     }
 
@@ -530,32 +556,36 @@
       body.insertAdjacentHTML('beforeend', section('s-bee', 'Classic Bee Prices', Object.keys(appData.classicBeePrices || {}).length + ' sizes', beePricesHtml));
 
       // ── PFP Fees 1-Step ──────────────────────────────
-      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee (%)'], [
+      var pfp1Html = tableEditor('pfp1', ['Account Size', 'Access Fee (%)', 'Funded Fee (%)'], [
         { key: 'key', label: 'Size' },
-        { key: 'access', label: 'Access Fee %' }
+        { key: 'access', label: 'Access Fee %' },
+        { key: 'funded', label: 'Funded Fee %' }
       ], Object.keys(appData.pfpAccessFees1Step).map(function (k) {
-        return { key: k, access: appData.pfpAccessFees1Step[k] };
+        return { key: k, access: appData.pfpAccessFees1Step[k], funded: appData.pfpFundedPct1Step && appData.pfpFundedPct1Step[k] !== undefined ? appData.pfpFundedPct1Step[k] : 2 };
       }), function (rows) {
-        var fees = {};
+        var fees = {}, funded = {};
         rows.forEach(function (r) {
-          if (r.key) { fees[r.key] = Number(r.access) || 0; }
+          if (r.key) { fees[r.key] = Number(r.access) || 0; funded[r.key] = Number(r.funded) || 0; }
         });
         appData.pfpAccessFees1Step = fees;
+        appData.pfpFundedPct1Step = funded;
       });
       body.insertAdjacentHTML('beforeend', section('s-pfp1', 'PFP Fees — 1-Step', Object.keys(appData.pfpAccessFees1Step).length + ' sizes', pfp1Html));
 
       // ── PFP Fees 2-Step ──────────────────────────────
-      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee (%)'], [
+      var pfp2Html = tableEditor('pfp2', ['Account Size', 'Access Fee (%)', 'Funded Fee (%)'], [
         { key: 'key', label: 'Size' },
-        { key: 'access', label: 'Access Fee %' }
+        { key: 'access', label: 'Access Fee %' },
+        { key: 'funded', label: 'Funded Fee %' }
       ], Object.keys(appData.pfpAccessFees2Step).map(function (k) {
-        return { key: k, access: appData.pfpAccessFees2Step[k] };
+        return { key: k, access: appData.pfpAccessFees2Step[k], funded: appData.pfpFundedPct2Step && appData.pfpFundedPct2Step[k] !== undefined ? appData.pfpFundedPct2Step[k] : 2 };
       }), function (rows) {
-        var fees = {};
+        var fees = {}, funded = {};
         rows.forEach(function (r) {
-          if (r.key) { fees[r.key] = Number(r.access) || 0; }
+          if (r.key) { fees[r.key] = Number(r.access) || 0; funded[r.key] = Number(r.funded) || 0; }
         });
         appData.pfpAccessFees2Step = fees;
+        appData.pfpFundedPct2Step = funded;
       });
       body.insertAdjacentHTML('beforeend', section('s-pfp2', 'PFP Fees — 2-Step', Object.keys(appData.pfpAccessFees2Step).length + ' sizes', pfp2Html));
 

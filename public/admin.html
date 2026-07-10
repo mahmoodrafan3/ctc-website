@@ -338,10 +338,25 @@
       setTimeout(function () { el.className = 'status-msg'; }, 3000);
     }
 
+    // Return to login screen when auth fails
+    function requireLogin() {
+      AUTH_TOKEN = '';
+      sessionStorage.removeItem('adminToken');
+      document.getElementById('dashboard').classList.remove('visible');
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('password').value = '';
+      document.getElementById('password').focus();
+    }
+
     async function loadData() {
       showLoading(true);
       try {
         var res = await fetch('/api/admin/prop-firm-data', { headers: authHeaders() });
+        if (res.status === 401) {
+          requireLogin();
+          showStatus('Session expired or invalid. Please log in again.', 'error');
+          return;
+        }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         appData = await res.json();
         renderDashboard();
@@ -370,6 +385,11 @@
           headers: authHeaders(),
           body: JSON.stringify(appData)
         });
+        if (res.status === 401) {
+          requireLogin();
+          showStatus('Session expired. Please log in again.', 'error');
+          return;
+        }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         // Clear any stale localStorage cache so the prop-firm page fetches fresh data
         try { localStorage.removeItem('pfDataCache'); } catch (e) {}

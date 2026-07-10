@@ -1,8 +1,8 @@
-name: Test WhatsApp Alert
+name: Test Telegram Alert
 
 on:
   workflow_dispatch:
-    # Manual trigger only — no cron schedule
+    # Manual trigger only
 
 jobs:
   test:
@@ -21,9 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Send demo WhatsApp
-        run: python test-whatsapp.py
+      - name: Send demo Telegram
+        run: python test-telegram.py
         env:
-          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-          WHATSAPP_PHONE_ID: ${{ secrets.WHATSAPP_PHONE_ID }}
-          ALERT_PHONE: ${{ secrets.ALERT_PHONE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

@@ -57,10 +57,9 @@ DATA_API = os.environ.get("DATA_API", "twelvedata")
 TWELVEDATA_KEY   = os.environ.get("TWELVEDATA_KEY", "")
 ALPHAVANTAGE_KEY = os.environ.get("ALPHAVANTAGE_KEY", "")
 
-# ── WhatsApp Cloud API (free: 1,000 conversations/month) ──
-WHATSAPP_TOKEN    = os.environ.get("WHATSAPP_TOKEN", "")
-WHATSAPP_PHONE_ID = os.environ.get("WHATSAPP_PHONE_ID", "")
-ALERT_PHONE       = os.environ.get("ALERT_PHONE", "")
+# ── Telegram Bot API (free, no approval needed) ─────────
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 # How many candles to fetch for the main timeframe
 CANDLE_COUNT = CCI_PERIOD + ATR_PERIOD + 10
@@ -345,37 +344,33 @@ def verify_htf_touch(symbol: str, recent_candles: list[dict[str, float]]) -> boo
 
 
 # ════════════════════════════════════════════════════════════════
-# WHATSAPP CLOUD API — free tier (1,000 conversations/month)
+# TELEGRAM BOT API — free and instant
 # ════════════════════════════════════════════════════════════════
 
-def send_whatsapp(message_body: str) -> bool:
-    """Send text message via WhatsApp Cloud API. Returns True on success."""
-    if not WHATSAPP_TOKEN or not WHATSAPP_PHONE_ID or not ALERT_PHONE:
-        print("⚠️  WhatsApp credentials not set — skipping notification")
+def send_telegram(message_body: str) -> bool:
+    """Send message via Telegram Bot API. Returns True on success."""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("⚠️  Telegram credentials not set — skipping notification")
         return False
 
-    url = f"https://graph.facebook.com/v23.0/{WHATSAPP_PHONE_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
-        "Content-Type": "application/json",
-    }
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
-        "messaging_product": "whatsapp",
-        "to": ALERT_PHONE,
-        "type": "text",
-        "text": {"body": message_body},
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message_body,
+        "parse_mode": "HTML",
     }
 
     try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=15)
-        if resp.status_code in (200, 201):
-            print("✅ WhatsApp notification sent")
+        resp = requests.post(url, json=payload, timeout=15)
+        data = resp.json()
+        if data.get("ok"):
+            print("✅ Telegram notification sent")
             return True
         else:
-            print(f"❌ WhatsApp API error {resp.status_code}: {resp.text}")
+            print(f"❌ Telegram API error: {data}")
             return False
     except requests.RequestException as e:
-        print(f"❌ WhatsApp request failed: {e}")
+        print(f"❌ Telegram request failed: {e}")
         return False
 
 
@@ -456,12 +451,12 @@ def main():
         except Exception as e:
             print(f"❌ Error: {e}")
 
-    # ── 3. Send WhatsApp notifications ─────────────────────
+    # ── 3. Send Telegram notifications ────────────────────
     print()
     if alerts:
         print(f"📨 Sending {len(alerts)} notification(s)...")
         for alert in alerts:
-            send_whatsapp(alert)
+            send_telegram(alert)
             time.sleep(1)
     else:
         print("✅ No signals found")
@@ -470,12 +465,10 @@ def main():
 if __name__ == "__main__":
     # Early credential validation
     missing = []
-    if not WHATSAPP_TOKEN:
-        missing.append("WHATSAPP_TOKEN")
-    if not WHATSAPP_PHONE_ID:
-        missing.append("WHATSAPP_PHONE_ID")
-    if not ALERT_PHONE:
-        missing.append("ALERT_PHONE")
+    if not TELEGRAM_BOT_TOKEN:
+        missing.append("TELEGRAM_BOT_TOKEN")
+    if not TELEGRAM_CHAT_ID:
+        missing.append("TELEGRAM_CHAT_ID")
     if DATA_API == "twelvedata" and not TWELVEDATA_KEY:
         missing.append("TWELVEDATA_KEY")
     if DATA_API == "alphavantage" and not ALPHAVANTAGE_KEY:

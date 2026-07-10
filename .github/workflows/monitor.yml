@@ -33,10 +33,9 @@ jobs:
           TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
           ALPHAVANTAGE_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
 
-          # ── WhatsApp Cloud API ────────────────
-          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-          WHATSAPP_PHONE_ID: ${{ secrets.WHATSAPP_PHONE_ID }}
-          ALERT_PHONE: ${{ secrets.ALERT_PHONE }}
+          # ── Telegram Bot API ──────────────────
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
           # ── Strategy config (optional overrides) ─
           MONITOR_SYMBOLS: ${{ vars.MONITOR_SYMBOLS || 'EURUSD' }}

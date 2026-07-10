@@ -928,8 +928,14 @@
           var code = c.code || '';
           var reward = c.reward || '';
 
-          // If coupon has panel restrictions, check if this list is in an allowed panel
-          if (c.panels) {
+          // Determine allowed panels for this coupon
+          var panels = c.panels;
+          // WELCOME25 defaults to classic + pfp only (even if MongoDB data doesn't have panels field)
+          if (!panels && code === 'WELCOME25') {
+            panels = ['classic', 'pfp'];
+          }
+
+          if (panels) {
             var panel = list.closest('.pf-panel');
             var panelId = panel ? panel.id : '';
             var panelName = '';
@@ -944,7 +950,7 @@
               if (!pfpStepEl || pfpStepEl.value === '1step') return;
             }
 
-            if (c.panels.indexOf(panelName) === -1) return;
+            if (panels.indexOf(panelName) === -1) return;
           }
 
           var item = document.createElement('div');

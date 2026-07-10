@@ -1,0 +1,29 @@
+name: Test WhatsApp Alert
+
+on:
+  workflow_dispatch:
+    # Manual trigger only — no cron schedule
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send demo WhatsApp
+        run: python test-whatsapp.py
+        env:
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_ID: ${{ secrets.WHATSAPP_PHONE_ID }}
+          ALERT_PHONE: ${{ secrets.ALERT_PHONE }}

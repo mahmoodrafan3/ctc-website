@@ -685,6 +685,33 @@
         <span><strong>Disclaimer:</strong> FundedHive provides simulated trading environments. Participation in challenges does not guarantee funding in real or live market accounts. Rules regarding leverage, drawdown, and risk groups can be updated. Always review the latest Terms and Conditions on the official FundedHive website before proceeding.</span>
       </div>
 
+      <!-- Empty State (shown when no MongoDB connection) -->
+      <div class="pf-empty" id="pfEmpty" style="display:none;">
+        <div class="pf-empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+        </div>
+        <h3 class="pf-empty-title">Database Not Connected</h3>
+        <p class="pf-empty-desc">Connect to <strong>MongoDB</strong> to view and manage prop firm data including account sizes, pricing, coupons, and challenge details.</p>
+        <div class="pf-empty-steps">
+          <div class="pf-empty-step">
+            <span class="pf-empty-step-num">1</span>
+            <span>Start your MongoDB instance</span>
+          </div>
+          <div class="pf-empty-step">
+            <span class="pf-empty-step-num">2</span>
+            <span>Set <code>MONGODB_URI</code> environment variable</span>
+          </div>
+          <div class="pf-empty-step">
+            <span class="pf-empty-step-num">3</span>
+            <span>Refresh this page to see your data</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -720,7 +747,7 @@
   <!-- Scripts -->
   <script>
     // ═══════════════════════════════════════════════════════════
-    // Data loads from MongoDB API, falls back to inline seed data.
+    // Data loads from MongoDB API — no fallback seed data.
     // ═══════════════════════════════════════════════════════════
 
     // ═══════════════════════════════════════════════════════════
@@ -744,122 +771,15 @@
     }
 
     // ═══════════════════════════════════════════════════════════
-    // Load data — localStorage cache, then MongoDB API
+    // DB Connection Status
     // ═══════════════════════════════════════════════════════════
 
-    // ═══════════════════════════════════════════════════════════
-    // Inline seed data — used when MongoDB is unavailable
-    // ═══════════════════════════════════════════════════════════
+    var hasMongoData = false;
 
-    var DEFAULT_SEED = {
-      classicBeePrices: {
-        2000:   { NewBee: 15,   WorkerBee: 19,   QueenBee: 29 },
-        5000:   { NewBee: 29,   WorkerBee: 39,   QueenBee: 49 },
-        10000:  { NewBee: 79,   WorkerBee: 99,   QueenBee: 119 },
-        25000:  { NewBee: 149,  WorkerBee: 199,  QueenBee: 229 },
-        50000:  { NewBee: 299,  WorkerBee: 349,  QueenBee: 399 },
-        100000: { NewBee: 499,  WorkerBee: 599,  QueenBee: 699 },
-        200000: { NewBee: 899,  WorkerBee: 1099, QueenBee: 1199 }
-      },
-      classicDetails: [
-        { label: 'Profit Target — Phase 1', value: '8%' },
-        { label: 'Profit Target — Phase 2', value: '6%' },
-        { label: 'Funded Target', value: 'No monthly target' },
-        { label: 'Daily Loss Limit', value: '3% – 5% (Tier dependent)' },
-        { label: 'Max Loss Per Trade', value: '3%' },
-        { label: 'Overall Drawdown', value: '10% (Static)' },
-        { label: 'Trading Duration', value: 'Unlimited' },
-        { label: 'Minimum Trading Days', value: 'None' },
-        { label: 'Consistency Rule', value: 'No' },
-        { label: 'Profit Split — NewBee', value: '70%' },
-        { label: 'Profit Split — WorkerBee', value: '80%' },
-        { label: 'Profit Split — QueenBee', value: '90% – 99%' },
-        { label: 'Leverage — NewBee', value: '1:50 (Dynamic)' },
-        { label: 'Leverage — WorkerBee', value: '1:100 (Dynamic)' },
-        { label: 'Leverage — QueenBee', value: '1:200 (Dynamic)' },
-        { label: 'News Trading', value: 'Allowed' },
-        { label: 'EA / Bots', value: 'Yes (no HFT)' },
-        { label: 'Swap-Free', value: '100%' },
-        { label: 'Stop Loss', value: 'Required' },
-        { label: 'Platform', value: 'cTrader' },
-        { label: 'Payout Method', value: 'USDC via smart contract' }
-      ],
-      pfpAccessFees1Step: { 5000: 20, 10000: 40, 25000: 100, 50000: 200, 100000: 400, 200000: 800 },
-      pfpAccessFees2Step: { 5000: 20, 10000: 40, 25000: 100, 50000: 200, 100000: 400, 200000: 800 },
-      pfpRiskData: {
-        low:      { label: 'Low Risk',       dailyLoss: '2%',   maxLoss: '1%',   drawdown: '5%',  leverage: '1:200', stopLoss: 'Opening & Closing', fee: 'Pay 100% from first payout', fundedFeePct: 1, upfrontPct: 0 },
-        moderate: { label: 'Moderate Risk',  dailyLoss: '3%',   maxLoss: '1.5%', drawdown: '6%',  leverage: '1:100', stopLoss: 'Closing only',        fee: 'Pay 100% from first payout', fundedFeePct: 2, upfrontPct: 0 },
-        medium:   { label: 'Medium Risk',    dailyLoss: '4%',   maxLoss: '2%',   drawdown: '7%',  leverage: '1:50',  stopLoss: 'Not required',        fee: 'Pay 50% from first payout', fundedFeePct: 2.5, upfrontPct: 50 },
-        high:     { label: 'High Risk',      dailyLoss: '5%',   maxLoss: '3%',   drawdown: '10%', leverage: '1:30',  stopLoss: 'Not required',        fee: 'Standard fee from first payout', fundedFeePct: 3, upfrontPct: 50 }
-      },
-      pfpStepData: {
-        '1step': { label: '1-Step', target1: '10%', target1Label: 'Profit Target',              target2: '—', minDays: '3 days' },
-        '2step': { label: '2-Step', target1: '8%',  target1Label: 'Profit Target — Phase 1',    target2: '6%', minDays: '3 days per phase' }
-      },
-      instantLevels: {
-        1:  { balance: 10000,  upgrade: 0,     buyPrice: 299,  nextLabel: 'Upgrade to Level 2' },
-        2:  { balance: 20000,  upgrade: 400,   buyPrice: 0,    nextLabel: 'Upgrade to Level 3' },
-        3:  { balance: 40000,  upgrade: 800,   buyPrice: 0,    nextLabel: 'Upgrade to Level 4' },
-        4:  { balance: 80000,  upgrade: 1600,  buyPrice: 0,    nextLabel: 'Upgrade to Level 5' },
-        5:  { balance: 160000, upgrade: 3200,  buyPrice: 0,    nextLabel: 'Upgrade to Level 6' },
-        6:  { balance: 240000, upgrade: 4800,  buyPrice: 0,    nextLabel: 'Upgrade to Level 7' },
-        7:  { balance: 360000, upgrade: 7200,  buyPrice: 0,    nextLabel: 'Upgrade to Level 8' },
-        8:  { balance: 480000, upgrade: 9600,  buyPrice: 0,    nextLabel: 'Upgrade to Level 9' },
-        9:  { balance: 640000, upgrade: 12800, buyPrice: 0,    nextLabel: 'Upgrade to Level 10' },
-        10: { balance: 1000000, upgrade: 0,    buyPrice: 0,    nextLabel: 'Max Level' }
-      },
-      instantDetails: [
-        { label: 'Starting Balance', value: '$10,000 (Level 1)' },
-        { label: 'Max Account', value: '$1,000,000 (Level 10)' },
-        { label: 'Profit Target Per Level', value: '6%' },
-        { label: 'Upgrade Fee', value: '2% of new balance' },
-        { label: 'Daily Loss Limit', value: 'None' },
-        { label: 'Max Loss Per Trade', value: '2%' },
-        { label: 'Overall Drawdown', value: '6% (Static)' },
-        { label: 'Profit Split', value: '80% Fixed' },
-        { label: 'Daily Withdrawal Cap', value: '$2,000' },
-        { label: 'Level 1 Execution', value: 'B-Book' },
-        { label: 'Levels 2+ Execution', value: 'A-Book (AADS)' },
-        { label: 'News Trading', value: 'Allowed' },
-        { label: 'EA / Bots', value: 'Yes (no HFT)' },
-        { label: 'Swap-Free', value: '100%' },
-        { label: 'Stop Loss', value: 'Required' },
-        { label: 'Platform', value: 'cTrader' },
-        { label: 'Payout Method', value: 'USDC via smart contract' }
-      ],
-      pfpStaticDetails: [
-        { label: 'Risk Category', value: 'Low Risk' },
-        { label: 'Step Type', value: '2-Step' },
-        { label: 'Funded Split', value: '80% Fixed' },
-        { label: 'Trading Duration', value: 'Unlimited' },
-        { label: 'Consistency Rule', value: 'No' },
-        { label: 'News Trading', value: 'Allowed' },
-        { label: 'EA / Bots', value: 'Yes (no HFT)' },
-        { label: 'Swap-Free', value: '100%' },
-        { label: 'Platform', value: 'cTrader' },
-        { label: 'Payout Method', value: 'USDC via smart contract' }
-      ],
-      pfpPriceLabels: [
-        { key: 'accessFeeLabel', value: 'Access Fee', description: 'One-time fee to access and start the prop firm challenge' },
-        { key: 'initialFeeLabel', value: 'Initial Fee', description: 'Initial upfront payment required to begin' },
-        { key: 'fundedFeeLabel', value: 'After Evaluation Funded Fee From Profit', description: 'Fee deducted from your first profit payout after successfully passing the evaluation' }
-      ],
-      coupons: [
-        { code: 'MOZO10', reward: '10% OFF' },
-        { code: 'MOZO20', reward: '20% OFF' },
-        { code: 'WELCOME25', reward: '25% OFF', panels: ['classic', 'pfp-2step'] },
-      ],
-      prohibited: [
-        '❌ High-Frequency Trading (HFT) bots',
-        '❌ Arbitrage strategies',
-        '❌ Reverse trading',
-        '❌ Copy trading',
-        '❌ Hedging across accounts',
-        '❌ Exploiting technical glitches'
-      ]
-    };
-
+    // ═══════════════════════════════════════════════════════════
     // Migrate old data formats to new ones
+    // ═══════════════════════════════════════════════════════════
+
     function migrateData(data) {
       if (!data) return data;
 
@@ -888,21 +808,20 @@
         }
       });
 
-      // Migrate old PFP deduction fields — no longer needed (funded fee from risk data)
-
       return data;
     }
 
     async function loadPropFirmData() {
-      // Always fetch fresh data from the API — no localStorage cache to avoid stale data
       try {
         var res = await fetch('/api/prop-firm-data');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
         migrateData(data);
-        appData = Object.assign({}, DEFAULT_SEED, data);
+        appData = data;
+        hasMongoData = true;
       } catch (e) {
-        appData = DEFAULT_SEED;
+        appData = {};
+        hasMongoData = false;
       }
     }
 
@@ -953,6 +872,7 @@
     }
 
     function populateCoupons(coupons) {
+      if (!coupons || !coupons.length) return;
       var lists = document.querySelectorAll('.pf-coupon-list');
       if (!lists.length) return;
       lists.forEach(function (list) {
@@ -992,6 +912,7 @@
           list.appendChild(item);
         });
       });
+      attachCouponCopyListeners();
     }
 
     // Update coupon discount prices based on the currently displayed price
@@ -1006,8 +927,8 @@
         var match = rewardEl.textContent.match(/(\d+)%/);
         if (match && basePrice > 0) {
           var pct = parseInt(match[1], 10);
-          var discounted = Math.round(basePrice * (100 - pct) / 100);
-          priceSpan.textContent = '$' + discounted.toLocaleString();
+          var discounted = basePrice * (100 - pct) / 100;
+          priceSpan.textContent = formatPrice(discounted);
         } else {
           priceSpan.textContent = '';
         }
@@ -1035,11 +956,28 @@
       return d.innerHTML;
     }
 
+    // Format a number as a price string.
+    // Whole numbers display as integers (e.g. 15 → "$15"),
+    // floats with decimals show with 2 decimal places (e.g. 15.52 → "$15.52").
+    function formatPrice(val) {
+      var num = Number(val);
+      if (num % 1 === 0) {
+        return '$' + num.toLocaleString();
+      }
+      return '$' + num.toFixed(2);
+    }
+
     // ═══════════════════════════════════════════════════════════
     // UI Initialization
     // ═══════════════════════════════════════════════════════════
 
     function initUI() {
+
+      // ── Show empty state when no MongoDB data ──────────────
+      var emptyEl = document.getElementById('pfEmpty');
+      if (emptyEl) {
+        emptyEl.style.display = hasMongoData ? 'none' : '';
+      }
 
       // ── Get all element references first (before clearing DOM) ─
       var classicSelect = document.getElementById('classicSize');
@@ -1147,7 +1085,7 @@
           var basePrice = 0;
           if (sizePrices && sizePrices[beeKey] !== undefined) {
             basePrice = Number(sizePrices[beeKey]);
-            classicPrice.textContent = '$' + basePrice.toLocaleString();
+            classicPrice.textContent = formatPrice(basePrice);
           } else {
             classicPrice.textContent = '—';
           }
@@ -1170,7 +1108,7 @@
         // Access Fee = stored as dollar price directly
         var basePrice = Number(accessFees[sizeVal]) || 0;
         if (basePrice > 0) {
-          pfpTotalFee.textContent = '$' + basePrice.toLocaleString();
+          pfpTotalFee.textContent = formatPrice(basePrice);
         } else {
           pfpTotalFee.textContent = '—';
         }
@@ -1180,13 +1118,13 @@
         // After Evaluation Funded Fee = funded fee % of account size (from risk data)
         var fundedFeePct = Number(riskData.fundedFeePct) || 0;
         if (fundedFeePct > 0 && sizeVal) {
-          var deductionAmount = Math.round(Number(sizeVal) * fundedFeePct / 100);
-          pfpDeduction.textContent = '$' + deductionAmount.toLocaleString();
+          var deductionAmount = Number(sizeVal) * fundedFeePct / 100;
+          pfpDeduction.textContent = formatPrice(deductionAmount);
           // Upfront = upfrontPct% of the funded fee
           var upfrontPct = Number(riskData.upfrontPct) || 0;
           if (upfrontPct > 0) {
-            var upfrontAmount = Math.round(deductionAmount * upfrontPct / 100);
-            pfpUpfront.textContent = '$' + upfrontAmount.toLocaleString();
+            var upfrontAmount = deductionAmount * upfrontPct / 100;
+            pfpUpfront.textContent = formatPrice(upfrontAmount);
           } else {
             pfpUpfront.textContent = '—';
           }
@@ -1252,9 +1190,9 @@
           var data = (appData.instantLevels || {})[val];
           if (data) {
             instantLevelLabel.textContent = data.nextLabel;
-            instantUpgradeFee.textContent = data.upgrade === 0 ? '—' : '$' + Number(data.upgrade).toLocaleString();
-            instantNewBalance.textContent = '$' + Number(data.balance).toLocaleString();
-            instantBuyPrice.textContent = data.buyPrice > 0 ? '$' + Number(data.buyPrice).toLocaleString() : '—';
+            instantUpgradeFee.textContent = data.upgrade === 0 ? '—' : formatPrice(Number(data.upgrade));
+            instantNewBalance.textContent = formatPrice(Number(data.balance));
+            instantBuyPrice.textContent = data.buyPrice > 0 ? formatPrice(Number(data.buyPrice)) : '—';
             updateCouponDiscounts('pfpanel-instant', Number(data.buyPrice) || 0);
           } else {
             instantLevelLabel.textContent = '—';
@@ -1329,8 +1267,69 @@
     }
 
     // ═══════════════════════════════════════════════════════════
-    // Initialize on DOM Ready
+    // Toast Notification
     // ═══════════════════════════════════════════════════════════
+
+    function showToast(code) {
+      var container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      var toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">'
+        + '<polyline points="20 6 9 17 4 12"></polyline></svg>'
+        + 'Copied <span class="toast-code">' + esc(code) + '</span>';
+
+      container.appendChild(toast);
+
+      // Trigger animation
+      requestAnimationFrame(function () {
+        toast.classList.add('visible');
+      });
+
+      setTimeout(function () {
+        toast.classList.remove('visible');
+        setTimeout(function () {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, 2200);
+    }
+
+    // Attach copy listeners to coupon items after they are populated
+    function attachCouponCopyListeners() {
+      document.querySelectorAll('.pf-coupon-item').forEach(function (item) {
+        // Avoid duplicate listeners
+        if (item.dataset.copyAttached) return;
+        item.dataset.copyAttached = 'true';
+
+        item.addEventListener('click', function (e) {
+          // Don't interfere with inner clicks
+          var codeEl = this.querySelector('.pf-coupon-code');
+          if (!codeEl) return;
+          var code = codeEl.textContent.trim();
+
+          navigator.clipboard.writeText(code).then(function () {
+            showToast(code);
+          }).catch(function () {
+            // Fallback
+            var textArea = document.createElement('textarea');
+            textArea.value = code;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+              document.execCommand('copy');
+              showToast(code);
+            } catch (err) {}
+            document.body.removeChild(textArea);
+          });
+        });
+
+        // Add pointer cursor to coupon items
+        item.style.cursor = 'pointer';
+      });
+    }
 
     document.addEventListener('DOMContentLoaded', async function () {
       await loadPropFirmData();
@@ -1338,5 +1337,9 @@
       hideLoading();
     });
   </script>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
 </body>
 </html>

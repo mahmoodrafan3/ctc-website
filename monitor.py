@@ -27,10 +27,10 @@ import requests
 # ════════════════════════════════════════════════════════════════
 
 # Forex pairs to monitor (comma-separated)
-SYMBOLS = os.environ.get("MONITOR_SYMBOLS", "EURUSD,GBPUSD,USDJPY").split(",")
+SYMBOLS = os.environ.get("MONITOR_SYMBOLS", "EURUSD").split(",")
 
 # Data timeframe: 1min, 5min, 15min (match your trading chart)
-TIMEFRAME = os.environ.get("MONITOR_TIMEFRAME", "1min")
+TIMEFRAME = os.environ.get("MONITOR_TIMEFRAME", "5min")
 
 # ── Trend Magic parameters (match Pine Script) ─────────────
 CCI_PERIOD = int(os.environ.get("CCI_PERIOD", "15"))

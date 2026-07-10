@@ -39,8 +39,8 @@ jobs:
           ALERT_PHONE: ${{ secrets.ALERT_PHONE }}
 
           # ── Strategy config (optional overrides) ─
-          MONITOR_SYMBOLS: ${{ vars.MONITOR_SYMBOLS || 'EURUSD,GBPUSD,USDJPY' }}
-          MONITOR_TIMEFRAME: ${{ vars.MONITOR_TIMEFRAME || '1min' }}
+          MONITOR_SYMBOLS: ${{ vars.MONITOR_SYMBOLS || 'EURUSD' }}
+          MONITOR_TIMEFRAME: ${{ vars.MONITOR_TIMEFRAME || '5min' }}
           CCI_PERIOD: ${{ vars.CCI_PERIOD || '15' }}
           ATR_PERIOD: ${{ vars.ATR_PERIOD || '5' }}
           ATR_COEFF: ${{ vars.ATR_COEFF || '1.0' }}

@@ -90,6 +90,15 @@ def check_session() -> tuple[bool, str]:
 # FREE DATA API
 # ════════════════════════════════════════════════════════════════
 
+def normalize_symbol(symbol: str) -> str:
+    """Convert forex symbol format for Twelve Data API.
+    Handles both EURUSD and EUR/USD formats."""
+    s = symbol.strip().upper()
+    if '/' not in s and len(s) == 6 and s.isalpha():
+        return f"{s[:3]}/{s[3:]}"
+    return s
+
+
 def _parse_ohlc(raw_list: list[dict]) -> list[dict[str, float]]:
     """Convert raw API candles (newest-first) to OHLC dicts (oldest-first)."""
     candles = []
@@ -110,8 +119,10 @@ def fetch_candles_twelvedata(symbol: str, count: int | None = None) -> list[dict
     ⚠️ Free forex data may be delayed ~15 min.
     """
     url = "https://api.twelvedata.com/time_series"
+    # Twelve Data expects forex symbols in EUR/USD format
+    api_symbol = normalize_symbol(symbol)
     params = {
-        "symbol": symbol,
+        "symbol": api_symbol,
         "interval": TIMEFRAME,
         "outputsize": count or CANDLE_COUNT,
         "apikey": TWELVEDATA_KEY,
@@ -164,8 +175,9 @@ def fetch_candles_alphavantage(symbol: str, count: int | None = None) -> list[di
 def fetch_candles_htf_twelvedata(symbol: str) -> list[dict[str, float]]:
     """Fetch HTF candles (e.g. 1h) for touch confirmation."""
     url = "https://api.twelvedata.com/time_series"
+    api_symbol = normalize_symbol(symbol)
     params = {
-        "symbol": symbol,
+        "symbol": api_symbol,
         "interval": HTF_TIMEFRAME,
         "outputsize": HTF_TOUCH_BARS + 2,
         "apikey": TWELVEDATA_KEY,

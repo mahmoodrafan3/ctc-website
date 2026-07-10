@@ -4,10 +4,10 @@ CTC Strategy Monitor
 ────────────────────
 Runs as a GitHub Actions scheduled job (every 5 minutes).
 
-Fetches real-time OHLC data from a free API, calculates the Trend Magic
-indicator (CCI + ATR), detects price crossovers during London/New York
-sessions with HTF touch confirmation, and sends WhatsApp notifications
-via the WhatsApp Cloud API (free tier: 1,000 conversations/month).
+Fetches real-time OHLC data from the Twelve Data free API, calculates the
+Trend Magic indicator (CCI + ATR), detects candle body crossovers of the
+Trend Magic line during London/New York sessions, and sends alerts via
+Telegram Bot API.
 
 Port of the TradingView Pine Script indicator from code/code.html.
 """
@@ -44,11 +44,6 @@ LONDON_END   = int(os.environ.get("LONDON_END", "280"))
 # New York: 08:00-09:55 EST  →  minutes 480 - 595
 NY_START     = int(os.environ.get("NY_START", "480"))
 NY_END       = int(os.environ.get("NY_END", "595"))
-
-# ── HTF Touch Filter ──────────────────────────────────────
-# Matches Pine Script default: useHtfTouchFilter = true, htfTouchBars = 3
-HTF_TOUCH_BARS = int(os.environ.get("HTF_TOUCH_BARS", "3"))
-HTF_TIMEFRAME  = os.environ.get("HTF_TIMEFRAME", "1h")
 
 # ── Free data API ─────────────────────────────────────────
 # "twelvedata" (default, 800 calls/day free) or "alphavantage"
@@ -171,36 +166,11 @@ def fetch_candles_alphavantage(symbol: str, count: int | None = None) -> list[di
     return candles[-needed:]
 
 
-def fetch_candles_htf_twelvedata(symbol: str) -> list[dict[str, float]]:
-    """Fetch HTF candles (e.g. 1h) for touch confirmation."""
-    url = "https://api.twelvedata.com/time_series"
-    api_symbol = normalize_symbol(symbol)
-    params = {
-        "symbol": api_symbol,
-        "interval": HTF_TIMEFRAME,
-        "outputsize": HTF_TOUCH_BARS + 2,
-        "apikey": TWELVEDATA_KEY,
-    }
-    resp = requests.get(url, params=params, timeout=15)
-    resp.raise_for_status()
-    data = resp.json()
-    if "values" not in data or not data["values"]:
-        raise ValueError(f"Twelve Data HTF returned no values: {data.get('message', 'unknown')}")
-    return _parse_ohlc(data["values"])
-
-
 def fetch_candles(symbol: str, count: int | None = None) -> list[dict[str, float]]:
     """Fetch main timeframe candles."""
     if DATA_API == "alphavantage":
         return fetch_candles_alphavantage(symbol, count)
     return fetch_candles_twelvedata(symbol, count)
-
-
-def fetch_candles_htf(symbol: str) -> list[dict[str, float]]:
-    """Fetch HTF candles for touch filter."""
-    if DATA_API == "alphavantage":
-        return fetch_candles_alphavantage(symbol, HTF_TOUCH_BARS + 2)
-    return fetch_candles_htf_twelvedata(symbol)
 
 
 # ════════════════════════════════════════════════════════════════
@@ -306,41 +276,6 @@ def calc_trend_magic_full(candles: list[dict[str, float]]) -> dict[str, Any]:
         "strong_sell": strong_sell,
         "trend_bull": trend_bull,
     }
-
-
-# ════════════════════════════════════════════════════════════════
-# HTF TOUCH CONFIRMATION
-# ── Pine Script default: useHtfTouchFilter = true
-#    Checks if any candle in the last N bars touched the HTF line.
-# ════════════════════════════════════════════════════════════════
-
-def verify_htf_touch(symbol: str, recent_candles: list[dict[str, float]]) -> bool:
-    """
-    Check if any of the last N candles' ranges touch the HTF close level.
-    
-    Matches Pine Script's useHtfTouchFilter (default ON):
-      candleTouchesHtf = high >= htfClose and low <= htfClose
-      for i = 0 to htfTouchBars - 1
-          if candleTouchesHtf[i]
-              anyTouchHtf := true
-    """
-    try:
-        htf_candles = fetch_candles_htf(symbol)
-        if not htf_candles:
-            return True  # Can't verify — assume OK
-
-        htf_close = htf_candles[-1]["close"]
-
-        # Check the last N main-timeframe candles for HTF touch
-        for candle in recent_candles[-HTF_TOUCH_BARS:]:
-            if candle["high"] >= htf_close and candle["low"] <= htf_close:
-                return True
-
-        return False
-
-    except Exception as e:
-        print(f"  (HTF check skipped: {e})", end="")
-        return True  # Fail open
 
 
 # ════════════════════════════════════════════════════════════════

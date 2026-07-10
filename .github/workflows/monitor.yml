@@ -38,6 +38,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
           # ── Strategy config (optional overrides) ─
+          FORCE_SESSION: ${{ vars.FORCE_SESSION || 'false' }}
           MONITOR_SYMBOLS: ${{ vars.MONITOR_SYMBOLS || 'EURUSD' }}
           MONITOR_TIMEFRAME: ${{ vars.MONITOR_TIMEFRAME || '5min' }}
           CCI_PERIOD: ${{ vars.CCI_PERIOD || '15' }}

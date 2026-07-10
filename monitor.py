@@ -44,6 +44,8 @@ LONDON_END   = int(os.environ.get("LONDON_END", "280"))
 # New York: 08:00-09:55 EST  →  minutes 480 - 595
 NY_START     = int(os.environ.get("NY_START", "480"))
 NY_END       = int(os.environ.get("NY_END", "595"))
+# Set FORCE_SESSION=true to bypass session time check (for testing)
+FORCE_SESSION = os.environ.get("FORCE_SESSION", "").lower() == "true"
 
 # ── Free data API ─────────────────────────────────────────
 # "twelvedata" (default, 800 calls/day free) or "alphavantage"
@@ -321,11 +323,14 @@ def main():
 
     # ── 1. Session check ───────────────────────────────────
     in_session, session_name = check_session()
-    if not in_session:
+    if FORCE_SESSION:
+        session_name = "FORCED (testing)"
+        print(f"⚡ FORCE_SESSION enabled — checking anyway...")
+    elif not in_session:
         print("⏸️  Outside London/New York hours — skipping")
         return
-
-    print(f"✅ {session_name} session — monitoring...")
+    else:
+        print(f"✅ {session_name} session — monitoring...")
     print()
 
     # ── 2. Check each symbol ───────────────────────────────

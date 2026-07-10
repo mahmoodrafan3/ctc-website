@@ -207,6 +207,20 @@
     }
     .object-row .remove-btn:hover { background: rgba(239,68,68,0.1); }
 
+    /* ── Checkbox group (for coupon panels) ───────── */
+    .cb-group {
+      display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+    }
+    .cb-group label {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.7rem; font-weight: 600; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      cursor: pointer; white-space: nowrap;
+    }
+    .cb-group input[type="checkbox"] {
+      width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer;
+    }
+
     .status-msg {
       position: fixed; top: 72px; right: 24px; z-index: 999;
       padding: 12px 20px; border-radius: var(--radius);
@@ -560,12 +574,9 @@
       body.insertAdjacentHTML('beforeend', section('s-pd', 'PFP Static Details', appData.pfpStaticDetails.length + ' rows', pdHtml));
 
       // ── Coupons ──────────────────────────────────────
-      var cHtml = detailEditor('coupons', appData.coupons, function (val) {
+      var cHtml = couponEditor(appData.coupons, function (val) {
         appData.coupons = val;
-      }, [
-        { key: 'code', label: 'Code' },
-        { key: 'reward', label: 'Reward' }
-      ]);
+      });
       body.insertAdjacentHTML('beforeend', section('s-coupons', 'Coupons', appData.coupons.length + ' codes', cHtml));
 
       // ── PFP Price Labels ─────────────────────────────
@@ -730,6 +741,88 @@
       onSave(data);
     }
 
+    // ── Coupon Editor (with panel checkboxes) ──────────
+    var __cSave = {};
+    function couponEditor(data, onSave) {
+      __cSave['coupons'] = onSave;
+      var html = '<div class="object-editor" id="ce-coupons">';
+      data.forEach(function (item, i) {
+        html += couponRowHtml(item, i);
+      });
+      html += '</div>';
+      html += '<div class="add-row-bar"><button onclick="addCouponRow()">+ Add Coupon</button></div>';
+      return html;
+    }
+
+    function couponRowHtml(item, idx) {
+      var panels = item.panels || [];
+      var checked = function (p) { return panels.indexOf(p) !== -1 ? 'checked' : ''; };
+      return '<div class="object-row" data-idx="' + idx + '">'
+        + '<div class="form-group" style="flex:0.8"><label>Code</label>'
+        + '<input class="ce-code" value="' + esc(item.code || '') + '" /></div>'
+        + '<div class="form-group" style="flex:1"><label>Reward</label>'
+        + '<input class="ce-reward" value="' + esc(item.reward || '') + '" /></div>'
+        + '<div class="form-group" style="flex:1.5"><label>Apply to Plans</label>'
+        + '<div class="cb-group">'
+        + '<label><input type="checkbox" class="ce-panel" value="classic" ' + checked('classic') + ' /> Classic</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="pfp" ' + checked('pfp') + ' /> PFP</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="instant" ' + checked('instant') + ' /> Instant</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="abook" ' + checked('abook') + ' /> AADS</label>'
+        + '</div></div>'
+        + '<button class="remove-btn" onclick="deleteCouponRow(this)">✕</button>'
+        + '</div>';
+    }
+
+    function addCouponRow() {
+      var container = document.getElementById('ce-coupons');
+      if (!container) return;
+      var div = document.createElement('div');
+      div.className = 'object-row';
+      div.innerHTML = '<div class="form-group" style="flex:0.8"><label>Code</label>'
+        + '<input class="ce-code" value="" /></div>'
+        + '<div class="form-group" style="flex:1"><label>Reward</label>'
+        + '<input class="ce-reward" value="" /></div>'
+        + '<div class="form-group" style="flex:1.5"><label>Apply to Plans</label>'
+        + '<div class="cb-group">'
+        + '<label><input type="checkbox" class="ce-panel" value="classic" /> Classic</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="pfp" /> PFP</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="instant" /> Instant</label>'
+        + '<label><input type="checkbox" class="ce-panel" value="abook" /> AADS</label>'
+        + '</div></div>'
+        + '<button class="remove-btn" onclick="deleteCouponRow(this)">✕</button>';
+      container.appendChild(div);
+    }
+
+    function deleteCouponRow(btn) {
+      var row = btn.closest('.object-row');
+      var container = document.getElementById('ce-coupons');
+      if (row && container && container.querySelectorAll('.object-row').length > 1) {
+        row.remove();
+      }
+    }
+
+    function collectCoupons() {
+      var container = document.getElementById('ce-coupons');
+      if (!container) return;
+      var rows = container.querySelectorAll('.object-row');
+      var data = [];
+      rows.forEach(function (row) {
+        var code = (row.querySelector('.ce-code') || {}).value || '';
+        var reward = (row.querySelector('.ce-reward') || {}).value || '';
+        var panelCbs = row.querySelectorAll('.ce-panel:checked');
+        var panels = [];
+        panelCbs.forEach(function (cb) { panels.push(cb.value); });
+        if (code || reward) {
+          var item = { code: code, reward: reward };
+          // Only store panels if some are selected (none selected = show everywhere)
+          if (panels.length > 0) item.panels = panels;
+          data.push(item);
+        }
+      });
+      var fn = __cSave['coupons'];
+      if (fn) fn(data);
+    }
+
     // ── String List Editor (for prohibited) ────────────
     var __sleSave = {};
     function stringListEditor(id, data, onSave) {
@@ -840,11 +933,14 @@
         appData.pfpStepData = stepData;
       }
 
-      // Collect detail editors
-      ['classicDetails', 'instantDetails', 'pfpDetails', 'coupons', 'pfpPriceLabels'].forEach(function (id) {
+      // Collect detail editors (except coupons, which uses its own editor)
+      ['classicDetails', 'instantDetails', 'pfpDetails', 'pfpPriceLabels'].forEach(function (id) {
         var fn = __deSave[id];
         if (fn) collectDetail(id, fn);
       });
+
+      // Collect coupons (with panel checkboxes)
+      collectCoupons();
 
       // Collect string lists
       ['prohibited'].forEach(function (id) {

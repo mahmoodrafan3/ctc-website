@@ -8,6 +8,10 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -16,6 +20,7 @@
     { "src": "/code", "dest": "/public/code.html" },
     { "src": "/trading-journal", "dest": "/public/trading-journal.html" },
     { "src": "/", "dest": "/public/index.html" },
+    { "src": "/api/webhook/ctc-alert", "dest": "/api/webhook/ctc-alert" },
     { "src": "/(.*)", "dest": "/server.js" }
   ]
 }

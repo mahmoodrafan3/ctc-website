@@ -17,7 +17,7 @@
 //        Vercel Serverless Function → HTTPS (clean IP) → Telegram
 //
 //      Set "Webhook URL" in cTrader parameters to:
-//        https://ctc-website.vercel.app/api/webhook/ctc-alert
+//        https://ctc-strategy.vercel.app/api/webhook/ctc-alert
 //
 //      Requires TELEGRAM_BOT_TOKEN set as an env var on Vercel.
 //      The bot sends chat_id + text to Vercel, which relays to Telegram.

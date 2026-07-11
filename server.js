@@ -117,51 +117,7 @@ app.post('/api/admin/prop-firm-data', requireAdmin, express.json(), async (req, 
 });
 
 
-// ── cTrader Bot Alert Webhook Relay → Telegram ──────────────────────
-// NOTE: On Vercel, this is handled by api/webhook/ctc-alert.js (standalone
-// function with zero deps for fast cold starts). This Express route is only
-// used for local development.
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 
-// Only register the Express handler when NOT on Vercel (Vercel sets this env var)
-if (!process.env.VERCEL) {
-  app.post('/api/webhook/ctc-alert', express.json(), async (req, res) => {
-    const { chat_id, text } = req.body || {};
-
-    if (!text) {
-      return res.status(400).json({ error: 'Missing "text" in request body' });
-    }
-    if (!chat_id) {
-      return res.status(400).json({ error: 'Missing "chat_id" in request body' });
-    }
-    if (!TELEGRAM_BOT_TOKEN) {
-      console.error('❌ TELEGRAM_BOT_TOKEN not configured on server');
-      return res.status(500).json({ error: 'Server not configured for Telegram relay' });
-    }
-
-    try {
-      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id, text })
-      });
-
-      const data = await response.json();
-
-      if (data.ok) {
-        console.log('✅ cTrader alert relayed to Telegram successfully');
-        return res.json({ success: true });
-      } else {
-        console.error('❌ Telegram API error:', data.description);
-        return res.status(response.status).json({ error: data.description });
-      }
-    } catch (err) {
-      console.error('❌ Telegram relay failed:', err.message);
-      return res.status(502).json({ error: err.message });
-    }
-  });
-}
 
 // ── WhatsApp Webhook (for receiving message status and incoming messages) ──
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'ctc_strategy_wh_2026';

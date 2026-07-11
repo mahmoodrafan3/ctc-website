@@ -3,45 +3,23 @@
 // ============================================================================
 // 
 // How to use:
-// 1. Open cTrader → Automate → New Bot
-// 2. Copy this entire file into the editor
-// 3. Set your TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID below
+// 1. Search @mail2telegrambot on Telegram → Start → copy your unique email
+// 2. Paste that email as the "Telegram Email" parameter below
+// 3. Set up SMTP in cTrader: Settings → Email (use Gmail SMTP or any provider)
 // 4. Compile (F7) and run on BTCUSD M5 chart
-// 5. The bot will send Telegram alerts on Trend Magic crossovers!
+// 5. The bot will send alerts via email, which the Telegram bot forwards to you
 //
-// ── Delivery modes (order of priority) ────────────────────────────
+// ── How it works ───────────────────────────────────────────────────
+//   cTrader Cloud → Notifications.SendEmail() → SMTP server
+//     → mail2telegrambot → Telegram chat ✅
 //
-//   1. VERCEL WEBHOOK RELAY ✅ (recommended for cTrader Cloud)
-//      ═══════════════════════
-//      cTrader Cloud → HTTP POST (no Cloudflare) →
-//        Vercel Serverless Function → HTTPS (clean IP) → Telegram
-//
-//      Set "Webhook URL" in cTrader parameters to:
-//        https://ctc-strategy.vercel.app/api/webhook/ctc-alert
-//
-//      Requires TELEGRAM_BOT_TOKEN set as an env var on Vercel.
-//      The bot sends chat_id + text to Vercel, which relays to Telegram.
-//
-//   2. WebSocket relay (ws://your-server:25345)
-//      ═══════════════════════════════════════
-//      Works on cTrader Cloud. Requires your own relay server.
-//
-//   3. Direct Telegram (api.telegram.org)
-//      ═════════════════════════════════
-//      Best for local execution on your own PC (not cTrader Cloud).
-//      cTrader Cloud may block api.telegram.org — use Vercel relay instead.
-//
-//   4. External webhook relay (Make.com / Pipedream / etc.)
-//      ═════════════════════════════════════════════════════
-//      Works if you have an existing Zapier/Make/Pipedream workflow.
-//
+//   No Vercel server, no WebSocket, no direct HTTP to Telegram.
+//   Email is natively allowed in cTrader Cloud — fastest + most reliable.
 // ============================================================================
 
 using System;
-using System.Collections.Generic;
 using cAlgo.API;
 using cAlgo.API.Indicators;
-
 
 namespace cAlgo.Robots
 {
@@ -52,17 +30,8 @@ namespace cAlgo.Robots
         // CONFIGURATION — EDIT THESE VALUES BEFORE RUNNING
         // ════════════════════════════════════════════════════════════════
         
-        [Parameter("Telegram Bot Token", Group = "Telegram", DefaultValue = "8899864917:AAE-8bHbEKTfjzsIenWnacSZ79Gt0SKBdgM")]
-        public string TelegramBotToken { get; set; } = "8899864917:AAE-8bHbEKTfjzsIenWnacSZ79Gt0SKBdgM";
-        
-        [Parameter("Telegram Chat ID", Group = "Telegram", DefaultValue = "1235128870")]
-        public string TelegramChatId { get; set; } = "1235128870";
-        
-        [Parameter("Webhook URL", Group = "Telegram", DefaultValue = "")]
-        public string WebhookUrl { get; set; } = "";
-        
-        [Parameter("WebSocket URL", Group = "Telegram", DefaultValue = "")]
-        public string WebSocketUrl { get; set; } = "";
+        [Parameter("Telegram Email", Group = "Telegram", DefaultValue = "")]
+        public string TelegramEmail { get; set; } = "";
         
         // Trend Magic parameters
         private const int CciPeriod = 15;
@@ -84,6 +53,9 @@ namespace cAlgo.Robots
         [Parameter("Send Heartbeat (test)", Group = "Test", DefaultValue = false)]
         public bool SendHeartbeat { get; set; } = false;
         
+        [Parameter("Email Subject Prefix", Group = "Telegram", DefaultValue = "🤖 CTC Alert")]
+        public string EmailSubject { get; set; } = "🤖 CTC Alert";
+        
         // Session times (America/New_York minutes)
         private const int LondonStart = 180;   // 03:00 EST
         private const int LondonEnd = 280;     // 04:40 EST
@@ -97,57 +69,27 @@ namespace cAlgo.Robots
         private DateTime _lastBuyLevelAlert = DateTime.MinValue;
         private const int MinMinutesBetweenAlerts = 10;
         private const int MinBarsBeforeLevelAlerts = 5;
-        private const int MaxPendingMessages = 100;
         private TimeZoneInfo _estZone;
-        private Queue<string> _pendingMessages = new Queue<string>();
-        private int _telegramHostIndex = 0;
-        private static readonly string[] TelegramHosts = {
-            "api.telegram.org", "api2.telegram.org", "api3.telegram.org",
-            "api4.telegram.org", "api5.telegram.org"
-        };
-        private WebSocketClient _webSocketClient;
-        private bool _webSocketConnected;
-        private const string BrowserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
         
         protected override void OnStart()
         {
             _estZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
             Print("🚀 CTC Strategy Monitor started on " + SymbolName + " " + TimeFrame);
             
-            // ── Connect WebSocket relay if configured ──
-            if (!string.IsNullOrEmpty(WebSocketUrl))
-            {
-                ConnectWebSocket();
-            }
-            else if (!string.IsNullOrEmpty(WebhookUrl))
-            {
-                Print("   Telegram alerts via webhook relay: " + WebhookUrl);
-            }
+            if (string.IsNullOrEmpty(TelegramEmail))
+                Print("⚠️  Telegram Email not set! Get one from @mail2telegrambot on Telegram.");
             else
-            {
-                Print("   Telegram alerts enabled — direct to Telegram API");
-            }
+                Print("   Email alerts to: " + TelegramEmail);
+            
             Print("   Session filter: " + (UseSessionFilter ? "ON (London/NY only)" : "OFF (24/7 mode)"));
             Print("   Weekend filter: " + (SkipWeekends ? "ON (no trading Sat/Sun)" : "OFF (trades 24/7)"));
             Print("   Price level alerts: Sell @ " + PriceLevelSell + " | Buy @ " + PriceLevelBuy);
             if (SendHeartbeat)
-                Print("   Heartbeat enabled — sending Telegram ping every candle");
+                Print("   Heartbeat enabled — sending test email every candle");
         }
         
         protected override void OnBar()
         {
-            // Try to reconnect WebSocket if disconnected
-            if (!string.IsNullOrEmpty(WebSocketUrl) && !_webSocketConnected && _webSocketClient != null)
-            {
-                Print("   Attempting to reconnect WebSocket...");
-                _webSocketClient.Dispose();
-                _webSocketClient = null;
-                ConnectWebSocket();
-            }
-
-            // Try to flush any previously failed messages before processing new signals
-            FlushPendingMessages();
-
             if (!IsInSession(out string sessionName))
                 return;
             
@@ -155,16 +97,14 @@ namespace cAlgo.Robots
                 return;
             
             double close = Bars.Last(0).Close;
-            double low = Bars.Last(0).Low;
-            double high = Bars.Last(0).High;
             
-            // ── Heartbeat (temp: confirms Telegram works on every candle) ──
+            // ── Heartbeat ──
             if (SendHeartbeat)
             {
                 string heartbeatMsg = string.Format(
                     "💓 Heartbeat | {0} | Close: {1:F5} | Time: {2:HH:mm} EST",
                     SymbolName, close, Server.Time);
-                SendTelegramAlert(heartbeatMsg);
+                SendEmailAlert(heartbeatMsg);
             }
             
             // ── Check price level alerts ──
@@ -207,27 +147,23 @@ namespace cAlgo.Robots
                 trend,
                 Server.Time);
             
-            SendTelegramAlert(message);
-            
+            SendEmailAlert(message);
             Print("🚨 " + signalType + " SIGNAL on " + SymbolName + " at " + close);
         }
         
         private void CheckPriceLevels(double close, string sessionName)
         {
-            // Wait for enough bars to avoid false alerts on bot startup
             if (Bars.Count < MinBarsBeforeLevelAlerts)
                 return;
             
             double prevClose = Bars.Last(1).Close;
             
-            // ── SELL level: close crossed the level in either direction ──
+            // ── SELL level ──
             if (PriceLevelSell > 0)
             {
                 bool crossed = (prevClose <= PriceLevelSell && close > PriceLevelSell)
                             || (prevClose >= PriceLevelSell && close < PriceLevelSell);
                 bool cooldownOk = (Server.Time - _lastSellLevelAlert).TotalMinutes >= MinMinutesBetweenAlerts;
-                
-                Print("🔍 SELL: prevC=" + prevClose + " C=" + close + " lvl=" + PriceLevelSell + " crossed=" + crossed + " cooldown=" + cooldownOk);
                 
                 if (crossed && cooldownOk)
                 {
@@ -241,19 +177,17 @@ namespace cAlgo.Robots
                         "Session: {4}\n" +
                         "Time: {5:HH:mm} EST",
                         direction, SymbolName, close, PriceLevelSell, sessionName, Server.Time);
-                    SendTelegramAlert(msg);
-                    Print("🔴 SELL level triggered! Alert sent.");
+                    SendEmailAlert(msg);
+                    Print("🔴 SELL level triggered!");
                 }
             }
             
-            // ── BUY level: close crossed the level in either direction ──
+            // ── BUY level ──
             if (PriceLevelBuy > 0)
             {
                 bool crossed = (prevClose <= PriceLevelBuy && close > PriceLevelBuy)
                             || (prevClose >= PriceLevelBuy && close < PriceLevelBuy);
                 bool cooldownOk = (Server.Time - _lastBuyLevelAlert).TotalMinutes >= MinMinutesBetweenAlerts;
-                
-                Print("🔍 BUY: prevC=" + prevClose + " C=" + close + " lvl=" + PriceLevelBuy + " crossed=" + crossed + " cooldown=" + cooldownOk);
                 
                 if (crossed && cooldownOk)
                 {
@@ -267,8 +201,8 @@ namespace cAlgo.Robots
                         "Session: {4}\n" +
                         "Time: {5:HH:mm} EST",
                         direction, SymbolName, close, PriceLevelBuy, sessionName, Server.Time);
-                    SendTelegramAlert(msg);
-                    Print("🟢 BUY level triggered! Alert sent.");
+                    SendEmailAlert(msg);
+                    Print("🟢 BUY level triggered!");
                 }
             }
         }
@@ -277,14 +211,14 @@ namespace cAlgo.Robots
         {
             DateTime estTime = TimeZoneInfo.ConvertTime(Server.Time, TimeZoneInfo.Utc, _estZone);
             
-            // Skip weekends if enabled (crypto trades 24/7, so disable for BTCUSD etc.)
+            // Skip weekends if enabled
             if (SkipWeekends && (estTime.DayOfWeek == DayOfWeek.Saturday || estTime.DayOfWeek == DayOfWeek.Sunday))
             {
                 sessionName = "Weekend";
                 return false;
             }
             
-            // If session filter is disabled, run 24/7 (e.g. for crypto like BTCUSD)
+            // If session filter is disabled, run 24/7
             if (!UseSessionFilter)
             {
                 sessionName = "24/7";
@@ -306,6 +240,23 @@ namespace cAlgo.Robots
             
             sessionName = "";
             return false;
+        }
+        
+        /// <summary>
+        /// Send alert via email → Telegram bridge.
+        /// Uses Notifications.SendEmail() which is natively allowed in cTrader Cloud.
+        /// The Telegram bot (@mail2telegrambot) receives the email and forwards to your chat.
+        /// </summary>
+        private void SendEmailAlert(string body)
+        {
+            if (string.IsNullOrEmpty(TelegramEmail))
+            {
+                Print("⚠️  Cannot send alert — Telegram Email not configured");
+                return;
+            }
+            
+            Notifications.SendEmail(TelegramEmail, EmailSubject, body);
+            Print("📧 Email alert sent to " + TelegramEmail);
         }
         
         private TrendMagicResult CalculateTrendMagic()
@@ -399,281 +350,8 @@ namespace cAlgo.Robots
             };
         }
         
-        /// <summary>
-        /// Retry any previously failed messages. Called at the start of each OnBar.
-        /// Stops on first failure so remaining queue is retried next candle.
-        /// </summary>
-        private void FlushPendingMessages()
-        {
-            while (_pendingMessages.Count > 0)
-            {
-                string msg = _pendingMessages.Peek();
-                if (TrySendTelegramOnce(msg, out bool permanent))
-                {
-                    _pendingMessages.Dequeue();
-                }
-                else
-                {
-                    if (permanent)
-                    {
-                        // Client error — discard this message permanently
-                        _pendingMessages.Dequeue();
-                        Print("🗑️ Discarded permanently failed message (" + _pendingMessages.Count + " remaining)");
-                    }
-                    else
-                    {
-                        Print("⏳ " + _pendingMessages.Count + " message(s) queued — retrying next candle");
-                    }
-                    return; // Stop on first failure
-                }
-            }
-        }
-
-        /// <summary>
-        /// Connect to the WebSocket relay server.
-        /// </summary>
-        private void ConnectWebSocket()
-        {
-            try
-            {
-                _webSocketClient = new WebSocketClient();
-                
-                _webSocketClient.Connected += (args) =>
-                {
-                    _webSocketConnected = true;
-                    Print("✅ Connected to WebSocket relay at " + WebSocketUrl);
-                    // Flush any queued messages now that we're connected
-                    FlushPendingMessages();
-                };
-                
-                _webSocketClient.Disconnected += (args) =>
-                {
-                    _webSocketConnected = false;
-                    Print("⚠️ Disconnected from WebSocket relay — messages will queue");
-                };
-                
-                _webSocketClient.TextReceived += (args) =>
-                {
-                    string response = args.Text;
-                    if (response == "OK")
-                        Print("✅ Telegram alert delivered via WebSocket relay");
-                    else if (response == "CONNECTED")
-                        Print("   WebSocket relay handshake complete");
-                    else if (response.StartsWith("ERROR:"))
-                        Print("⚠️ WebSocket relay error: " + response.Substring(6));
-                };
-                
-                var uri = new Uri(WebSocketUrl);
-                _webSocketClient.Connect(uri);
-                Print("   Connecting to WebSocket relay...");
-            }
-            catch (Exception ex)
-            {
-                Print("❌ Failed to connect WebSocket: " + ex.Message);
-                _webSocketConnected = false;
-            }
-        }
-
-        /// <summary>
-        /// Try sending once. Priority: WebSocket relay > Webhook relay > direct Telegram.
-        /// Sets permanent=true for errors that should never be retried.
-        /// </summary>
-        private bool TrySendTelegramOnce(string message, out bool permanent)
-        {
-            permanent = false;
-
-            // ── WebSocket relay mode ──
-            if (!string.IsNullOrEmpty(WebSocketUrl))
-                return TrySendViaWebSocket(message, out permanent);
-
-            // ── Webhook relay mode (Make.com / Pipedream / etc.) ──
-            if (!string.IsNullOrEmpty(WebhookUrl))
-                return TrySendViaWebhook(message, out permanent);
-
-            // ── Direct Telegram mode ──
-            for (int i = 0; i < TelegramHosts.Length; i++)
-            {
-                string host = TelegramHosts[(_telegramHostIndex + i) % TelegramHosts.Length];
-
-                try
-                {
-                    var uri = new Uri("https://" + host + "/bot" + TelegramBotToken + "/sendMessage");
-                    var request = new HttpRequest(uri);
-                    request.Method = HttpMethod.Post;
-                    request.Headers.Add("User-Agent", BrowserUserAgent);
-                    request.Headers.Add("Content-Type", "application/json");
-                    request.Body = BuildTelegramJson(message);
-
-                    var response = Http.Send(request);
-
-                    if (response.IsSuccessful)
-                    {
-                        _telegramHostIndex = (_telegramHostIndex + i) % TelegramHosts.Length;
-                        return true;
-                    }
-
-                    string body = response.Body ?? "(empty)";
-
-                    if (response.StatusCode >= 400 && response.StatusCode < 500)
-                    {
-                        Print("❌ Telegram client error " + response.StatusCode + " on " + host + " - " + body + " (permanent, discarding)");
-                        permanent = true;
-                        return false;
-                    }
-
-                    if (i < TelegramHosts.Length - 1)
-                        Print("⚠️ HTTP " + response.StatusCode + " on " + host + " — trying next host...");
-                    else
-                        Print("⚠️ Telegram send failed on all hosts (HTTP " + response.StatusCode + ") — queuing for retry");
-                }
-                catch (Exception ex)
-                {
-                    if (i < TelegramHosts.Length - 1)
-                        Print("⚠️ Exception on " + host + ": " + ex.Message + " — trying next host...");
-                    else
-                        Print("⚠️ Telegram exception on all hosts: " + ex.Message + " — queuing for retry");
-                }
-            }
-
-            return false;
-        }
-
-
-
-        /// <summary>
-        /// Send message via WebSocket relay. If not connected, queues it.
-        /// The relay server forwards to Telegram and sends back OK/ERROR.
-        /// </summary>
-        private bool TrySendViaWebSocket(string message, out bool permanent)
-        {
-            permanent = false;
-
-            if (!_webSocketConnected || _webSocketClient == null)
-            {
-                Print("⚠️ WebSocket not connected — queuing for retry");
-                return false;
-            }
-
-            try
-            {
-                _webSocketClient.Send(message);
-                return true; // Assume success — relay sends back OK/ERROR via TextReceived
-            }
-            catch (Exception ex)
-            {
-                Print("⚠️ WebSocket send failed: " + ex.Message + " — queuing for retry");
-                _webSocketConnected = false;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Send message to a webhook relay URL (Make.com, Pipedream, etc.)
-        /// which then forwards to Telegram. Sends chat_id + text as JSON.
-        /// </summary>
-        private bool TrySendViaWebhook(string message, out bool permanent)
-        {
-            permanent = false;
-
-            try
-            {
-                var uri = new Uri(WebhookUrl);
-                var request = new HttpRequest(uri);
-                request.Method = HttpMethod.Post;
-                request.Headers.Add("User-Agent", BrowserUserAgent);
-                request.Headers.Add("Content-Type", "application/json");
-
-                string escapedText = EscapeJson(message);
-                request.Body = "{\"chat_id\":\"" + TelegramChatId + "\",\"text\":\"" + escapedText + "\"}";
-
-                var response = Http.Send(request);
-
-                if (response.IsSuccessful)
-                {
-                    Print("✅ Alert sent via webhook relay");
-                    return true;
-                }
-
-                string body = response.Body ?? "(empty)";
-
-                if (response.StatusCode >= 400 && response.StatusCode < 500)
-                {
-                    Print("❌ Webhook error " + response.StatusCode + " - " + body + " (permanent, discarding)");
-                    permanent = true;
-                    return false;
-                }
-
-                Print("⚠️ Webhook relay failed (HTTP " + response.StatusCode + ") — queuing for retry");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Print("⚠️ Webhook exception: " + ex.Message + " — queuing for retry");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Build JSON body for direct Telegram API call.
-        /// </summary>
-        private string BuildTelegramJson(string message)
-        {
-            string escaped = EscapeJson(message);
-            return "{\"chat_id\":\"" + TelegramChatId + "\",\"text\":\"" + escaped + "\"}";
-        }
-
-        /// <summary>
-        /// Escape a string for safe inclusion in a JSON string value.
-        /// </summary>
-        private static string EscapeJson(string text)
-        {
-            return text
-                .Replace("\\", "\\\\")
-                .Replace("\"", "\\\"")
-                .Replace("\n", "\\n")
-                .Replace("\r", "\\r")
-                .Replace("\t", "\\t");
-        }
-
-
-        /// <summary>
-        /// Send a Telegram alert. Tries immediately; on transient failure, queues it
-        /// for retry on the next candle. On permanent failure (4xx), discards it.
-        /// </summary>
-        private void SendTelegramAlert(string message)
-        {
-            // First, try to send immediately
-            if (TrySendTelegramOnce(message, out bool permanent))
-                return;
-
-            if (permanent)
-                return; // Client error, not worth queuing
-
-            // Queue for retry on subsequent candles
-            if (_pendingMessages.Count < MaxPendingMessages)
-            {
-                _pendingMessages.Enqueue(message);
-                Print("📥 Message queued for retry on next candle (" + _pendingMessages.Count + " pending)");
-            }
-            else
-            {
-                Print("⚠️ Telegram queue full (" + MaxPendingMessages + "), discarding oldest");
-                _pendingMessages.Dequeue();
-                _pendingMessages.Enqueue(message);
-            }
-        }
-        
         protected override void OnStop()
         {
-            // Close WebSocket connection if active
-            if (_webSocketClient != null)
-            {
-                if (_webSocketConnected)
-                    _webSocketClient.Close(WebSocketClientCloseStatus.NormalClosure);
-                _webSocketClient.Dispose();
-                _webSocketClient = null;
-                _webSocketConnected = false;
-            }
             Print("CTC Strategy Monitor stopped");
         }
     }

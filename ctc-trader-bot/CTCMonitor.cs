@@ -33,6 +33,9 @@ namespace cAlgo.Robots
         [Parameter("Telegram Email", Group = "Telegram", DefaultValue = "")]
         public string TelegramEmail { get; set; } = "";
         
+        [Parameter("From Email", Group = "Telegram", DefaultValue = "")]
+        public string FromEmail { get; set; } = "";
+        
         // Trend Magic parameters
         private const int CciPeriod = 15;
         private const int AtrPeriod = 5;
@@ -80,6 +83,11 @@ namespace cAlgo.Robots
                 Print("⚠️  Telegram Email not set! Get one from @mail2telegrambot on Telegram.");
             else
                 Print("   Email alerts to: " + TelegramEmail);
+            
+            if (string.IsNullOrEmpty(FromEmail))
+                Print("⚠️  From Email not set! Use the same email as your cTrader SMTP settings.");
+            else
+                Print("   Sending from: " + FromEmail);
             
             Print("   Session filter: " + (UseSessionFilter ? "ON (London/NY only)" : "OFF (24/7 mode)"));
             Print("   Weekend filter: " + (SkipWeekends ? "ON (no trading Sat/Sun)" : "OFF (trades 24/7)"));
@@ -254,8 +262,13 @@ namespace cAlgo.Robots
                 Print("⚠️  Cannot send alert — Telegram Email not configured");
                 return;
             }
+            if (string.IsNullOrEmpty(FromEmail))
+            {
+                Print("⚠️  Cannot send alert — From Email not configured");
+                return;
+            }
             
-            Notifications.SendEmail(TelegramEmail, EmailSubject, body);
+            Notifications.SendEmail(FromEmail, TelegramEmail, EmailSubject, body);
             Print("📧 Email alert sent to " + TelegramEmail);
         }
         

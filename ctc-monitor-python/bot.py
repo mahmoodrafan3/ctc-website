@@ -1,10 +1,10 @@
 # ============================================================================
-# CTC Strategy Monitor — Python (MetaApi + Render.com)
+# CTC Strategy Monitor — Python (yfinance + Render.com)
 # ============================================================================
 #
 # Architecture:
-#   OANDA MT5 (EUR/USD) → MetaApi Cloud (WebSocket)
-#     → Python bot on Render.com free tier
+#   Yahoo Finance (free, no API key, no broker)
+#     → Python bot on Render.com free tier (polls every 4 min)
 #     → Telegram alerts (direct HTTPS API)
 #
 # Keep-alive:
@@ -19,8 +19,6 @@
 #   Price level alerts (configurable buy/sell thresholds)
 #
 # Environment variables (set in Render Dashboard):
-#   META_API_TOKEN      — from https://app.metaapi.cloud/token
-#   META_ACCOUNT_ID     — MetaApi account ID (from MetaApi dashboard)
 #   TELEGRAM_BOT_TOKEN  — from @BotFather
 #   TELEGRAM_CHAT_ID    — from @userinfobot
 #   PRICE_LEVEL_SELL    — optional, e.g. 1.1200
@@ -30,15 +28,15 @@
 import asyncio
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from zoneinfo import ZoneInfo
 
 import httpx
 import numpy as np
+import pandas as pd
+import yfinance as yf
 from fastapi import FastAPI
-from metaapi_cloud_sdk import MetaApi
-from metaapi_cloud_sdk.clients.meta_api_client import SynchronizationListener
 
 # ── Logging ────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -49,19 +47,19 @@ logging.basicConfig(
 logger = logging.getLogger("ctc-monitor")
 
 # ── Configuration from environment ─────────────────────────────────
-META_API_TOKEN = os.environ.get("META_API_TOKEN", "")
-META_ACCOUNT_ID = os.environ.get("META_ACCOUNT_ID", "")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 PRICE_LEVEL_SELL = float(os.environ.get("PRICE_LEVEL_SELL", "0"))
 PRICE_LEVEL_BUY = float(os.environ.get("PRICE_LEVEL_BUY", "0"))
 
-SYMBOL = "EURUSD"
+SYMBOL = "EURUSD=X"  # Yahoo Finance ticker for EUR/USD
 TIMEFRAME = "5m"
 CCI_PERIOD = 15
 ATR_PERIOD = 5
 ATR_COEFF = 1.0
 MIN_ALERT_INTERVAL_MINUTES = 10
+POLL_INTERVAL_SECONDS = 240  # 4 minutes (less than 5 min candle)
+
 # Session times (America/New_York minutes from midnight)
 LONDON_START = 180  # 03:00 EST
 LONDON_END = 280  # 04:40 EST
@@ -101,16 +99,13 @@ class TrendMagicResult:
 # ───────────────────────────────────────────────────────────────────
 class CTCBot:
     def __init__(self):
-        self.meta_api: Optional[MetaApi] = None
-        self.account = None
-        self.connection = None
-        self._candles: list = []
+        self._candles: list = []  # list of dicts: {time, open, high, low, close}
         self._last_alert_time = datetime.min
         self._last_sell_alert = datetime.min
         self._last_buy_alert = datetime.min
-        self._last_processed_candle_time: Optional[datetime] = None
+        self._last_processed_time: Optional[datetime] = None
         self._shutdown_requested = False
-        self._watchdog_task: Optional[asyncio.Task] = None
+        self._poll_task: Optional[asyncio.Task] = None
         self.running = False
 
     # ════════════════════════════════════════════════════════════════
@@ -118,226 +113,202 @@ class CTCBot:
     # ════════════════════════════════════════════════════════════════
 
     async def start(self) -> None:
-        """Connect to MetaApi, load history, subscribe, and start listening."""
-        if not META_API_TOKEN or not META_ACCOUNT_ID:
-            logger.error("META_API_TOKEN and META_ACCOUNT_ID must be set.")
-            return
-
+        """Start the polling loop."""
         self._shutdown_requested = False
 
         logger.info("=" * 55)
-        logger.info("  CTC Strategy Monitor — Python")
-        logger.info(f"  Symbol: {SYMBOL}  Timeframe: {TIMEFRAME}")
+        logger.info("  CTC Strategy Monitor — Python (yfinance)")
+        logger.info(f"  Symbol: EUR/USD  Timeframe: {TIMEFRAME}")
+        logger.info(f"  Poll interval: {POLL_INTERVAL_SECONDS}s")
         logger.info(f"  Sessions: London ({_fmt_mins(LONDON_START)}-{_fmt_mins(LONDON_END)})")
         logger.info(f"            NY     ({_fmt_mins(NY_START)}-{_fmt_mins(NY_END)}) EST")
         if PRICE_LEVEL_SELL > 0:
             logger.info(f"  Sell level: {PRICE_LEVEL_SELL}")
         if PRICE_LEVEL_BUY > 0:
             logger.info(f"  Buy level:  {PRICE_LEVEL_BUY}")
+        if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+            logger.warning("⚠️  TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set!")
         logger.info("=" * 55)
 
-        try:
-            self.meta_api = MetaApi(META_API_TOKEN)
-            self.account = await self.meta_api.metatrader_account_api.get_account(
-                META_ACCOUNT_ID
-            )
-            self.connection = self.account.get_streaming_connection()
+        # Initial fetch to prime candle history
+        logger.info("Fetching initial EUR/USD data...")
+        await self._fetch_candles()
 
-            # ── Attach listener for real-time candle updates ──
-            # Capture the handler now to avoid `self` confusion inside the listener class.
-            on_candle = self._on_candle_received
+        self.running = True
 
-            class CTCListener(SynchronizationListener):
-                async def on_candle_updated(self, symbol, timeframe, candle):
-                    if symbol == SYMBOL and str(timeframe) == TIMEFRAME:
-                        try:
-                            await on_candle(candle)
-                        except Exception as e:
-                            logger.error(
-                                f"Unhandled error in candle handler: {e}", exc_info=True
-                            )
+        if self._poll_task is None or self._poll_task.done():
+            self._poll_task = asyncio.create_task(self._poll_loop())
 
-            self.connection.add_synchronization_listener(CTCListener())
-
-            logger.info("Connecting to MetaApi...")
-            await self.connection.connect()
-            await self.connection.wait_synchronized()
-
-            # Load enough historical candles to prime indicators
-            await self._load_historical_candles()
-
-            # Subscribe to live candles
-            await self._subscribe_candles()
-
-            self.running = True
-
-            # ── Start watchdog for auto-reconnect ──
-            if self._watchdog_task is None or self._watchdog_task.done():
-                self._watchdog_task = asyncio.create_task(self._watchdog_loop())
-
-            logger.info("✅ Bot is running — waiting for new candles...")
-
-        except Exception as e:
-            logger.error(f"❌ Failed to start bot: {e}")
-            self.running = False
+        logger.info("✅ Bot is running — polling EUR/USD every 4 minutes...")
 
     async def stop(self) -> None:
-        """Disconnect from MetaApi and stop the watchdog."""
+        """Stop the polling loop."""
         self._shutdown_requested = True
-
-        if self._watchdog_task and not self._watchdog_task.done():
-            self._watchdog_task.cancel()
+        if self._poll_task and not self._poll_task.done():
+            self._poll_task.cancel()
             try:
-                await self._watchdog_task
+                await self._poll_task
             except asyncio.CancelledError:
                 pass
-
-        if self.connection:
-            try:
-                await self.connection.unsubscribe_from_market_data(
-                    [{"type": "candles", "symbol": SYMBOL, "timeframe": TIMEFRAME}]
-                )
-            except Exception:
-                pass
-            try:
-                await self.connection.close()
-            except Exception:
-                pass
-
         self.running = False
         logger.info("Bot stopped")
 
     # ════════════════════════════════════════════════════════════════
-    # WATCHDOG — reconnect if connection drops
+    # POLLING LOOP
     # ════════════════════════════════════════════════════════════════
 
-    async def _watchdog_loop(self) -> None:
-        """Periodically check if the connection is alive; reconnect if needed."""
+    async def _poll_loop(self) -> None:
+        """Periodically fetch EUR/USD data and check for signals."""
         while not self._shutdown_requested:
-            await asyncio.sleep(30)
+            try:
+                await self._fetch_and_check()
+            except Exception as e:
+                logger.error(f"Poll error: {e}", exc_info=True)
 
-            if self._shutdown_requested:
-                break
+            # Wait before next poll — check more frequently during sessions
+            for _ in range(POLL_INTERVAL_SECONDS // 10):
+                if self._shutdown_requested:
+                    return
+                await asyncio.sleep(10)
 
-            if not self.running or not self.connection:
-                logger.warning("⚠️ Bot not running — attempting reconnection...")
-                await self.start()
+    # ════════════════════════════════════════════════════════════════
+    # DATA FETCHING
+    # ════════════════════════════════════════════════════════════════
+
+    async def _fetch_candles(self) -> None:
+        """Fetch EUR/USD M5 candles from yfinance (non-blocking wrapper)."""
+        loop = asyncio.get_event_loop()
+        df = await loop.run_in_executor(None, self._do_yfinance_fetch)
+
+        if df is None or df.empty:
+            logger.warning("No data returned from yfinance")
+            return
+
+        parsed = self._parse_dataframe(df)
+
+        if not parsed:
+            logger.warning("Could not parse yfinance data")
+            return
+
+        # Merge with existing candles (keep newest 100)
+        existing = {c["time"]: c for c in self._candles}
+        for c in parsed:
+            existing[c["time"]] = c
+        sorted_candles = sorted(existing.values(), key=lambda x: x["time"])
+        self._candles = sorted_candles[-100:]
+
+        logger.info(f"Candle cache: {len(self._candles)} candles")
+
+    def _do_yfinance_fetch(self):
+        """Synchronous yfinance download (runs in executor)."""
+        try:
+            df = yf.download(
+                tickers=SYMBOL,
+                period="2d",
+                interval=TIMEFRAME,
+                progress=False,
+                auto_adjust=False,
+            )
+            return df
+        except Exception as e:
+            logger.error(f"yfinance download error: {e}")
+            return None
+
+    def _parse_dataframe(self, df: pd.DataFrame) -> list:
+        """
+        Convert yfinance DataFrame into our candle format.
+        Handles both flat columns and MultiIndex columns.
+        """
+        # Handle MultiIndex columns like (('Open', 'EURUSD=X'), ...)
+        if isinstance(df.columns, pd.MultiIndex):
+            # Try to extract the first level (Open, High, Low, Close)
+            try:
+                df.columns = df.columns.get_level_values(0)
+            except Exception:
+                # Fallback: take first column of each pair
+                df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+
+        # Detect columns (case-insensitive)
+        col_map = {}
+        for col in df.columns:
+            col_lower = str(col).lower().strip()
+            if col_lower == "open":
+                col_map["open"] = col
+            elif col_lower == "high":
+                col_map["high"] = col
+            elif col_lower == "low":
+                col_map["low"] = col
+            elif col_lower == "close":
+                col_map["close"] = col
+
+        if not all(k in col_map for k in ("open", "high", "low", "close")):
+            logger.warning(f"Unexpected yfinance columns: {list(df.columns)}")
+            return []
+
+        candles = []
+        for idx, row in df.iterrows():
+            try:
+                candle_time = idx.to_pydatetime()
+                # Make timezone-aware (UTC)
+                if candle_time.tzinfo is None:
+                    candle_time = candle_time.replace(tzinfo=timezone.utc)
+
+                open_val = float(row[col_map["open"]])
+                high_val = float(row[col_map["high"]])
+                low_val = float(row[col_map["low"]])
+                close_val = float(row[col_map["close"]])
+
+                # Skip rows with NaN values (incomplete / forming candles)
+                if any(np.isnan(v) for v in (open_val, high_val, low_val, close_val)):
+                    continue
+
+                candles.append({
+                    "time": candle_time,
+                    "open": open_val,
+                    "high": high_val,
+                    "low": low_val,
+                    "close": close_val,
+                })
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Skipping bad row: {e}")
                 continue
 
-            # Check if connection is still alive by trying to get terminal state
-            try:
-                state = self.connection.terminal_state
-                _ = state.connected
-            except Exception:
-                logger.warning("⚠️ Connection lost — reconnecting...")
-                self.running = False
-                await self.start()
+        return candles
 
     # ════════════════════════════════════════════════════════════════
-    # HISTORICAL DATA LOADING
+    # FETCH AND CHECK SIGNALS
     # ════════════════════════════════════════════════════════════════
 
-    async def _load_historical_candles(self) -> None:
-        """Fetch enough M5 candles to compute Trend Magic indicators."""
-        try:
-            candles = await self.meta_api.historical_market_data_api.get_historical_candles(
-                META_ACCOUNT_ID,
-                SYMBOL,
-                TIMEFRAME,
-                limit=50,
-            )
-            self._candles = [
-                {
-                    "time": self._parse_candle_time(c["time"]),
-                    "open": float(c["open"]),
-                    "high": float(c["high"]),
-                    "low": float(c["low"]),
-                    "close": float(c["close"]),
-                }
-                for c in candles
-                if c.get("time") and c.get("open") is not None
-            ]
-            logger.info(f"Loaded {len(self._candles)} historical candles")
-        except Exception as e:
-            logger.warning(f"Could not load historical candles: {e}")
-
-    # ════════════════════════════════════════════════════════════════
-    # MARKET DATA SUBSCRIPTION
-    # ════════════════════════════════════════════════════════════════
-
-    async def _subscribe_candles(self) -> None:
-        """Subscribe to real-time candle updates. Tries two API formats."""
-        logger.info("Subscribing to market data...")
-
-        # Format 1: List of dicts (newer SDK format)
-        try:
-            await self.connection.subscribe_to_market_data(
-                [{"type": "candles", "symbol": SYMBOL, "timeframe": TIMEFRAME}]
-            )
-            return
-        except Exception as e:
-            logger.warning(f"subscribe format 1 failed: {e}")
-
-        # Format 2: Symbol string (older SDK format)
-        try:
-            await self.connection.subscribe_to_market_data(SYMBOL)
-            return
-        except Exception as e:
-            logger.warning(f"subscribe format 2 failed: {e}")
-
-        logger.warning("Could not subscribe to market data — will poll instead")
-
-    # ════════════════════════════════════════════════════════════════
-    # REAL-TIME CANDLE HANDLER
-    # ════════════════════════════════════════════════════════════════
-
-    async def _on_candle_received(self, candle) -> None:
-        """
-        Called on every candle update (including intra-tick updates).
-        We only process when we detect a new *closed* candle.
-        The first candle received after subscription is treated as
-        "still forming" — we skip it to avoid processing an incomplete bar.
-        """
-        candle_time = self._parse_candle_time(candle["time"])
-
-        # ── Skip the first candle entirely (it's still forming) ──
-        if self._last_processed_candle_time is None:
-            self._last_processed_candle_time = candle_time
-            logger.debug(f"Skipping initial forming candle @ {candle_time}")
-            return
-
-        # Only process when the candle time changes (new closed candle)
-        if self._last_processed_candle_time == candle_time:
-            return
-
-        self._last_processed_candle_time = candle_time
-
-        self._add_or_update_candle({
-            "time": candle_time,
-            "open": float(candle["open"]),
-            "high": float(candle["high"]),
-            "low": float(candle["low"]),
-            "close": float(candle["close"]),
-        })
-
-        # ── Check signals ───────────────────────────────────────────
-        n = len(self._candles)
-        if n < max(CCI_PERIOD, ATR_PERIOD) + 2:
-            logger.debug(f"Warming up — only {n} candles")
-            return
-
+    async def _fetch_and_check(self) -> None:
+        """Fetch latest data and check for new signals."""
         if not self._is_in_session():
             return
 
+        # Fetch latest candles
+        await self._fetch_candles()
+
+        if len(self._candles) < max(CCI_PERIOD, ATR_PERIOD) + 2:
+            logger.debug(f"Warming up — only {len(self._candles)} candles")
+            return
+
+        # Detect if we have a new closed candle since last check
+        latest_candle = self._candles[-1]
+        if self._last_processed_time == latest_candle["time"]:
+            logger.debug("No new candle yet")
+            return
+
+        self._last_processed_time = latest_candle["time"]
+        close = latest_candle["close"]
+        now = datetime.now(EST_TZ)
+
+        # Calculate Trend Magic
         result = self._calculate_trend_magic()
         if result is None:
             return
 
-        close = self._candles[-1]["close"]
-        now = datetime.now(EST_TZ)
-
         logger.info(
-            f"📊 Candle | Close: {close:.5f} | "
+            f"📊 Candle {latest_candle['time'].strftime('%H:%M')} | "
+            f"Close: {close:.5f} | "
             f"CCI: {result.cci:.2f} | "
             f"Trend: {'BULL' if result.trend_bull else 'BEAR'} | "
             f"BuyX: {result.strong_buy} SellX: {result.strong_sell}"
@@ -353,27 +324,6 @@ class CTCBot:
         await self._check_price_levels(close, now)
 
     # ════════════════════════════════════════════════════════════════
-    # CANDLE HISTORY MANAGEMENT
-    # ════════════════════════════════════════════════════════════════
-
-    def _parse_candle_time(self, raw_time) -> datetime:
-        """Normalize a candle time value into a timezone-aware datetime."""
-        if isinstance(raw_time, datetime):
-            return raw_time
-        if isinstance(raw_time, str):
-            return datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
-        return datetime.fromisoformat(str(raw_time))
-
-    def _add_or_update_candle(self, candle: dict) -> None:
-        """Add a new candle or update the latest if same time."""
-        if not self._candles or self._candles[-1]["time"] != candle["time"]:
-            self._candles.append(candle)
-            if len(self._candles) > 100:
-                self._candles = self._candles[-100:]
-        else:
-            self._candles[-1] = candle
-
-    # ════════════════════════════════════════════════════════════════
     # SESSION FILTER
     # ════════════════════════════════════════════════════════════════
 
@@ -382,7 +332,6 @@ class CTCBot:
 
         # Skip weekends
         if now.weekday() >= 5:  # Sat=5, Sun=6
-            logger.debug("⛔ Weekend — no trading")
             return False
 
         minutes = now.hour * 60 + now.minute
@@ -392,7 +341,6 @@ class CTCBot:
         if NY_START <= minutes < NY_END:
             return True
 
-        logger.debug("Outside trading session — skipping")
         return False
 
     # ════════════════════════════════════════════════════════════════
@@ -488,7 +436,7 @@ class CTCBot:
 
         message = (
             f"🚨 FX MOZO {signal_type} SIGNAL\n"
-            f"Pair: {SYMBOL}\n"
+            f"Pair: EUR/USD\n"
             f"Price: {close:.5f}\n"
             f"Trend Magic: {result.magic_trend:.5f}\n"
             f"CCI: {result.cci:.2f} — {trend}\n"
@@ -513,7 +461,7 @@ class CTCBot:
                 direction = "UP" if close > PRICE_LEVEL_SELL else "DOWN"
                 await self._send_telegram(
                     f"🔴 PRICE LEVEL: SELL ({direction})\n"
-                    f"Pair: {SYMBOL}\n"
+                    f"Pair: EUR/USD\n"
                     f"Price: {close:.5f}\n"
                     f"Level: {PRICE_LEVEL_SELL:.5f}\n"
                     f"Time: {now.strftime('%H:%M')} EST"
@@ -529,7 +477,7 @@ class CTCBot:
                 direction = "UP" if close > PRICE_LEVEL_BUY else "DOWN"
                 await self._send_telegram(
                     f"🟢 PRICE LEVEL: BUY ({direction})\n"
-                    f"Pair: {SYMBOL}\n"
+                    f"Pair: EUR/USD\n"
                     f"Price: {close:.5f}\n"
                     f"Level: {PRICE_LEVEL_BUY:.5f}\n"
                     f"Time: {now.strftime('%H:%M')} EST"
@@ -578,7 +526,7 @@ def _fmt_mins(m: int) -> str:
 @app.on_event("startup")
 async def _startup():
     global bot_instance
-    logger.info("Starting CTC Monitor...")
+    logger.info("Starting CTC Monitor (yfinance)...")
     bot_instance = CTCBot()
     asyncio.create_task(bot_instance.start())
 
@@ -597,6 +545,7 @@ async def health():
     return {
         "status": "ok",
         "running": bot_instance.running if bot_instance else False,
+        "candles": len(bot_instance._candles) if bot_instance else 0,
         "time": datetime.now(EST_TZ).isoformat(),
     }
 
@@ -613,10 +562,5 @@ async def status():
             bot_instance._last_alert_time.isoformat()
             if bot_instance._last_alert_time != datetime.min
             else None
-        ),
-        "watchdog_alive": (
-            not bot_instance._watchdog_task.done()
-            if bot_instance._watchdog_task
-            else False
         ),
     }

@@ -19,7 +19,6 @@
 // ============================================================================
 
 using System;
-
 using cAlgo.API;
 using cAlgo.API.Indicators;
 

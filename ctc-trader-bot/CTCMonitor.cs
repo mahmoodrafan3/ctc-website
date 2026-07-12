@@ -19,7 +19,7 @@
 // ============================================================================
 
 using System;
-using System.Net;
+
 using cAlgo.API;
 using cAlgo.API.Indicators;
 
@@ -296,7 +296,7 @@ namespace cAlgo.Robots
                 string url = "https://api.telegram.org/bot" + BotToken
                     + "/sendMessage?chat_id=" + ChatId
                     + "&text=" + encoded
-                    + "&parse_mode=HTML";
+                    ;
                 
                 var request = new HttpRequest(url);
                 request.Method = HttpMethod.Get;

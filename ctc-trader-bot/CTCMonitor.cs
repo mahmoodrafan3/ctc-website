@@ -3,38 +3,45 @@
 // ============================================================================
 // 
 // How to use:
-// 1. Search @mail2telegrambot on Telegram → Start → copy your unique email
-// 2. Paste that email as the "Telegram Email" parameter below
-// 3. Set up SMTP in cTrader: Settings → Email (use Gmail SMTP or any provider)
+// 1. Get a Telegram bot token from @BotFather (free, 30 seconds)
+// 2. Find your chat ID: message @userinfobot or visit
+//    https://api.telegram.org/bot<TOKEN>/getUpdates
+// 3. Paste both as parameters below
 // 4. Compile (F7) and run on BTCUSD M5 chart
-// 5. The bot will send alerts via email, which the Telegram bot forwards to you
+// 5. The bot sends alerts directly to Telegram via HTTPS!
 //
-// ── How it works ───────────────────────────────────────────────────
-//   cTrader Cloud → Notifications.SendEmail() → SMTP server
-//     → mail2telegrambot → Telegram chat ✅
+// ── Delivery modes (in order of priority) ─────────────────────────
+//   1. Direct Telegram API  →  api.telegram.org (simplest, no server)
+//   2. Webhook URL relay    →  your relay server (Pipedream / Vercel)
 //
-//   No Vercel server, no WebSocket, no direct HTTP to Telegram.
-//   Email is natively allowed in cTrader Cloud — fastest + most reliable.
+// Mode 1 is preferred — it works in cTrader Cloud with
+// AccessRights.Internet enabled and needs no external services.
 // ============================================================================
 
 using System;
+using System.Net;
 using cAlgo.API;
 using cAlgo.API.Indicators;
 
 namespace cAlgo.Robots
 {
-    [Robot(TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
+    [Robot(TimeZone = TimeZones.UTC, AccessRights = AccessRights.Internet)]
     public class CTCMonitor : Robot
     {
         // ════════════════════════════════════════════════════════════════
         // CONFIGURATION — EDIT THESE VALUES BEFORE RUNNING
         // ════════════════════════════════════════════════════════════════
         
-        [Parameter("Telegram Email", Group = "Telegram", DefaultValue = "")]
-        public string TelegramEmail { get; set; } = "";
+        [Parameter("Bot Token", Group = "Telegram", DefaultValue = "")]
+        public string BotToken { get; set; } = "";
         
-        [Parameter("From Email", Group = "Telegram", DefaultValue = "")]
-        public string FromEmail { get; set; } = "";
+        [Parameter("Chat ID", Group = "Telegram", DefaultValue = "")]
+        public string ChatId { get; set; } = "";
+        
+        // Optional: override Webhook URL (e.g. Pipedream, Vercel relay)
+        // Leave empty to use direct Telegram API (recommended)
+        [Parameter("Webhook URL", Group = "Telegram", DefaultValue = "")]
+        public string WebhookUrl { get; set; } = "";
         
         // Trend Magic parameters
         private const int CciPeriod = 15;
@@ -56,9 +63,6 @@ namespace cAlgo.Robots
         [Parameter("Send Heartbeat (test)", Group = "Test", DefaultValue = false)]
         public bool SendHeartbeat { get; set; } = false;
         
-        [Parameter("Email Subject Prefix", Group = "Telegram", DefaultValue = "🤖 CTC Alert")]
-        public string EmailSubject { get; set; } = "🤖 CTC Alert";
-        
         // Session times (America/New_York minutes)
         private const int LondonStart = 180;   // 03:00 EST
         private const int LondonEnd = 280;     // 04:40 EST
@@ -73,27 +77,28 @@ namespace cAlgo.Robots
         private const int MinMinutesBetweenAlerts = 10;
         private const int MinBarsBeforeLevelAlerts = 5;
         private TimeZoneInfo _estZone;
+        private const string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
         
         protected override void OnStart()
         {
             _estZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
             Print("🚀 CTC Strategy Monitor started on " + SymbolName + " " + TimeFrame);
             
-            if (string.IsNullOrEmpty(TelegramEmail))
-                Print("⚠️  Telegram Email not set! Get one from @mail2telegrambot on Telegram.");
+            if (string.IsNullOrEmpty(BotToken) || string.IsNullOrEmpty(ChatId))
+                Print("⚠️  Bot Token and/or Chat ID not set! Get a token from @BotFather on Telegram.");
             else
-                Print("   Email alerts to: " + TelegramEmail);
+                Print("   Telegram alerts enabled — sending to chat " + ChatId);
             
-            if (string.IsNullOrEmpty(FromEmail))
-                Print("⚠️  From Email not set! Use the same email as your cTrader SMTP settings.");
+            if (!string.IsNullOrEmpty(WebhookUrl))
+                Print("   Using webhook relay: " + WebhookUrl);
             else
-                Print("   Sending from: " + FromEmail);
+                Print("   Using direct Telegram API (no relay needed)");
             
             Print("   Session filter: " + (UseSessionFilter ? "ON (London/NY only)" : "OFF (24/7 mode)"));
             Print("   Weekend filter: " + (SkipWeekends ? "ON (no trading Sat/Sun)" : "OFF (trades 24/7)"));
             Print("   Price level alerts: Sell @ " + PriceLevelSell + " | Buy @ " + PriceLevelBuy);
             if (SendHeartbeat)
-                Print("   Heartbeat enabled — sending test email every candle");
+                Print("   Heartbeat enabled — sending test alert every candle");
         }
         
         protected override void OnBar()
@@ -106,13 +111,13 @@ namespace cAlgo.Robots
             
             double close = Bars.Last(0).Close;
             
-            // ── Heartbeat ──
+            // ── Heartbeat (test: confirms Telegram works every candle) ──
             if (SendHeartbeat)
             {
                 string heartbeatMsg = string.Format(
                     "💓 Heartbeat | {0} | Close: {1:F5} | Time: {2:HH:mm} EST",
                     SymbolName, close, Server.Time);
-                SendEmailAlert(heartbeatMsg);
+                SendTelegramAlert(heartbeatMsg);
             }
             
             // ── Check price level alerts ──
@@ -155,7 +160,7 @@ namespace cAlgo.Robots
                 trend,
                 Server.Time);
             
-            SendEmailAlert(message);
+            SendTelegramAlert(message);
             Print("🚨 " + signalType + " SIGNAL on " + SymbolName + " at " + close);
         }
         
@@ -185,7 +190,7 @@ namespace cAlgo.Robots
                         "Session: {4}\n" +
                         "Time: {5:HH:mm} EST",
                         direction, SymbolName, close, PriceLevelSell, sessionName, Server.Time);
-                    SendEmailAlert(msg);
+                    SendTelegramAlert(msg);
                     Print("🔴 SELL level triggered!");
                 }
             }
@@ -209,7 +214,7 @@ namespace cAlgo.Robots
                         "Session: {4}\n" +
                         "Time: {5:HH:mm} EST",
                         direction, SymbolName, close, PriceLevelBuy, sessionName, Server.Time);
-                    SendEmailAlert(msg);
+                    SendTelegramAlert(msg);
                     Print("🟢 BUY level triggered!");
                 }
             }
@@ -219,14 +224,12 @@ namespace cAlgo.Robots
         {
             DateTime estTime = TimeZoneInfo.ConvertTime(Server.Time, TimeZoneInfo.Utc, _estZone);
             
-            // Skip weekends if enabled
             if (SkipWeekends && (estTime.DayOfWeek == DayOfWeek.Saturday || estTime.DayOfWeek == DayOfWeek.Sunday))
             {
                 sessionName = "Weekend";
                 return false;
             }
             
-            // If session filter is disabled, run 24/7
             if (!UseSessionFilter)
             {
                 sessionName = "24/7";
@@ -250,34 +253,124 @@ namespace cAlgo.Robots
             return false;
         }
         
+        // ════════════════════════════════════════════════════════════════
+        // TELEGRAM ALERT — Two delivery modes
+        // ════════════════════════════════════════════════════════════════
+        
         /// <summary>
-        /// Send alert via email → Telegram bridge.
-        /// Uses Notifications.SendEmail() which is natively allowed in cTrader Cloud.
-        /// The Telegram bot (@mail2telegrambot) receives the email and forwards to your chat.
+        /// Send a Telegram alert.
+        /// Mode 1 (preferred): Direct GET request to api.telegram.org
+        /// Mode 2 (fallback):  POST JSON to a webhook relay URL
         /// </summary>
-        private void SendEmailAlert(string body)
+        private void SendTelegramAlert(string message)
         {
-            if (string.IsNullOrEmpty(TelegramEmail))
+            if (string.IsNullOrEmpty(BotToken) || string.IsNullOrEmpty(ChatId))
             {
-                Print("⚠️  Cannot send alert — Telegram Email not configured");
-                return;
-            }
-            if (string.IsNullOrEmpty(FromEmail))
-            {
-                Print("⚠️  Cannot send alert — From Email not configured");
+                Print("⚠️  Cannot send alert — Bot Token or Chat ID not set");
                 return;
             }
             
-            Notifications.SendEmail(FromEmail, TelegramEmail, EmailSubject, body);
-            Print("📧 Email alert sent to " + TelegramEmail);
+            // Mode 1: Direct Telegram API via GET request
+            if (string.IsNullOrEmpty(WebhookUrl))
+            {
+                SendDirectTelegram(message);
+            }
+            // Mode 2: Webhook relay (Pipedream / Vercel / etc.)
+            else
+            {
+                SendViaWebhook(message);
+            }
         }
+        
+        /// <summary>
+        /// Send alert directly to Telegram API via HTTPS GET.
+        /// Uses cTrader's native Http.Send() — works in cTrader Cloud
+        /// with AccessRights.Internet enabled.
+        /// </summary>
+        private void SendDirectTelegram(string message)
+        {
+            try
+            {
+                // URL-encode the message text for safe inclusion in a query string
+                string encoded = Uri.EscapeDataString(message);
+                string url = "https://api.telegram.org/bot" + BotToken
+                    + "/sendMessage?chat_id=" + ChatId
+                    + "&text=" + encoded
+                    + "&parse_mode=HTML";
+                
+                var request = new HttpRequest(url);
+                request.Method = HttpMethod.Get;
+                
+                // Set a browser-like User-Agent to avoid any blocking
+                request.Headers.Add("User-Agent", UserAgent);
+                
+                var response = Http.Send(request);
+                
+                if (response.IsSuccessful)
+                {
+                    Print("✅ Telegram alert sent");
+                }
+                else
+                {
+                    string body = response.Body ?? "(empty)";
+                    Print("❌ Telegram error: HTTP " + response.StatusCode + " — " + body);
+                }
+            }
+            catch (Exception ex)
+            {
+                Print("❌ Telegram send failed: " + ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// Send alert via webhook relay URL (e.g. Pipedream, Vercel).
+        /// Sends chat_id + text as JSON body via HTTP POST.
+        /// </summary>
+        private void SendViaWebhook(string message)
+        {
+            try
+            {
+                var uri = new Uri(WebhookUrl);
+                var request = new HttpRequest(uri);
+                request.Method = HttpMethod.Post;
+                request.Headers.Add("User-Agent", UserAgent);
+                request.Headers.Add("Content-Type", "application/json");
+                
+                // Simple JSON: { "chat_id": "...", "text": "..." }
+                string escaped = message
+                    .Replace("\\", "\\\\")
+                    .Replace("\"", "\\\"")
+                    .Replace("\n", "\\n")
+                    .Replace("\r", "\\r")
+                    .Replace("\t", "\\t");
+                request.Body = "{\"chat_id\":\"" + ChatId + "\",\"text\":\"" + escaped + "\"}";
+                
+                var response = Http.Send(request);
+                
+                if (response.IsSuccessful)
+                {
+                    Print("✅ Alert sent via webhook relay");
+                }
+                else
+                {
+                    string body = response.Body ?? "(empty)";
+                    Print("⚠️ Webhook relay error: HTTP " + response.StatusCode + " — " + body);
+                }
+            }
+            catch (Exception ex)
+            {
+                Print("⚠️ Webhook relay failed: " + ex.Message);
+            }
+        }
+        
+        // ════════════════════════════════════════════════════════════════
         
         private TrendMagicResult CalculateTrendMagic()
         {
             int startIdx = Math.Max(0, Bars.Count - Math.Max(CciPeriod, AtrPeriod) - 10);
             int len = Bars.Count - startIdx;
             
-            // Compute ATR (SMA of True Range)
+            // Compute ATR
             double[] atr = new double[len];
             for (int i = AtrPeriod; i < len; i++)
             {
@@ -341,7 +434,7 @@ namespace cAlgo.Robots
                 }
             }
             
-            // Check last 2 candles for body crossover against their own magic_trend
+            // Check last 2 candles for body crossover
             bool strongBuy = false, strongSell = false;
             for (int i = Math.Max(1, len - 2); i < len; i++)
             {

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ctc-monitor
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r ctc-monitor-python/requirements.txt
+    startCommand: cd ctc-monitor-python && uvicorn bot:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: META_API_TOKEN
+        sync: false
+      - key: META_ACCOUNT_ID
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: PRICE_LEVEL_SELL
+        value: ""
+      - key: PRICE_LEVEL_BUY
+        value: ""

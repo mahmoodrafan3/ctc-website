@@ -41,39 +41,30 @@ app.get('/api/wakeup-render', async (req, res) => {
     return res.status(400).json({ error: 'RENDER_APP_URL not configured. Set it in Vercel environment variables.' });
   }
 
-  const urls = [
-    `${RENDER_APP_URL}/health`,
-    `${RENDER_APP_URL}/status`,
-  ];
+  const url = `${RENDER_APP_URL}/health`;
 
-  const results = [];
-  for (const url of urls) {
-    try {
-      const start = Date.now();
-      const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
-      const elapsed = Date.now() - start;
-      const text = await response.text();
-      results.push({
-        url,
-        status: response.status,
-        ok: response.ok,
-        elapsed: `${elapsed}ms`,
-        body: text.slice(0, 200),
-      });
-      console.log(`[wakeup] ${url} → ${response.status} (${elapsed}ms)`);
-    } catch (err) {
-      results.push({ url, error: err.message });
-      console.warn(`[wakeup] ${url} → FAILED: ${err.message}`);
-    }
+  let awake = false;
+  let detail = {};
+
+  try {
+    const start = Date.now();
+    const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    const elapsed = Date.now() - start;
+    const text = await response.text();
+    awake = response.ok;
+    detail = { status: response.status, elapsed: `${elapsed}ms`, body: text.slice(0, 200) };
+    console.log(`[wakeup] ${url} → ${response.status} (${elapsed}ms)`);
+  } catch (err) {
+    detail = { error: err.message };
+    console.warn(`[wakeup] ${url} → FAILED: ${err.message}`);
   }
 
-  const anyOk = results.some(r => r.ok);
-  console.log(`[wakeup] Render app is ${anyOk ? '🟢 AWAKE' : '🔴 still sleeping or unreachable'}`);
+  console.log(`[wakeup] Render app is ${awake ? '🟢 AWAKE' : '🔴 still sleeping or unreachable'}`);
 
   res.json({
     timestamp: new Date().toISOString(),
-    awake: anyOk,
-    results,
+    awake,
+    detail,
   });
 });
 

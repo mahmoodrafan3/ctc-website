@@ -33,6 +33,50 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// ── Wake-up Render app before trading sessions ───────────────────
+const RENDER_APP_URL = process.env.RENDER_APP_URL || '';
+
+app.get('/api/wakeup-render', async (req, res) => {
+  if (!RENDER_APP_URL) {
+    return res.status(400).json({ error: 'RENDER_APP_URL not configured. Set it in Vercel environment variables.' });
+  }
+
+  const urls = [
+    `${RENDER_APP_URL}/health`,
+    `${RENDER_APP_URL}/status`,
+  ];
+
+  const results = [];
+  for (const url of urls) {
+    try {
+      const start = Date.now();
+      const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
+      const elapsed = Date.now() - start;
+      const text = await response.text();
+      results.push({
+        url,
+        status: response.status,
+        ok: response.ok,
+        elapsed: `${elapsed}ms`,
+        body: text.slice(0, 200),
+      });
+      console.log(`[wakeup] ${url} → ${response.status} (${elapsed}ms)`);
+    } catch (err) {
+      results.push({ url, error: err.message });
+      console.warn(`[wakeup] ${url} → FAILED: ${err.message}`);
+    }
+  }
+
+  const anyOk = results.some(r => r.ok);
+  console.log(`[wakeup] Render app is ${anyOk ? '🟢 AWAKE' : '🔴 still sleeping or unreachable'}`);
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    awake: anyOk,
+    results,
+  });
+});
+
 // ── Public API: Serve prop firm data from MongoDB ─────────────────
 // ── Cleanup: strip stale fields from data ──────────────────────
 const STALE_KEYS = ['pfpFundedPct1Step', 'pfpFundedPct2Step', 'pfpDeductions1Step', 'pfpDeductions2Step'];
